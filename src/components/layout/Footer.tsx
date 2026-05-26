@@ -10,7 +10,7 @@ export default function Footer() {
             <h3 className="text-2xl font-bold  font-inter uppercase text-[#C9A465]">
               MEI BRIDAL COUTURE
             </h3>
-            <p className="text-xs text-[#4a4a4a] leading-relaxed font-inter">
+            <p className="text-sm text-[#4a4a4a] leading-relaxed font-inter">
              Crafting timeless elegance and preserving heritage through bespoke couture.
             </p>
           </div>
@@ -24,7 +24,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/shop"
-                  className="text-xs text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
+                  className="text-sm text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
                 >
                   About Us
                 </Link>
@@ -32,23 +32,23 @@ export default function Footer() {
               <li>
                 <Link
                   href="/shop"
-                  className="text-xs text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
+                  className="text-sm text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
                 >
                   The Atelier
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/custom-quote"
-                  className="text-xs text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
+                  href="/contact"
+                  className="text-sm text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
                 >
                   Craftsmanship
                 </Link>
               </li>
                <li>
                 <Link
-                  href="/custom-quote"
-                  className="text-xs text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
+                  href="/contact"
+                  className="text-sm text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
                 >
                   FAQs
                 </Link>
@@ -63,22 +63,22 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2">
               <li>
-                <span className="text-xs text-[#4a4a4a] font-inter">
+                <span className="text-sm text-[#4a4a4a] font-inter">
                   New Arrivals
                 </span>
               </li>
               <li>
-                <span className="text-xs text-[#4a4a4a] font-inter">
+                <span className="text-sm text-[#4a4a4a] font-inter">
                   Bridal Lehengas
                 </span>
               </li>
               <li>
-                <span className="text-xs text-[#4a4a4a] font-inter">
+                <span className="text-sm text-[#4a4a4a] font-inter">
                  Heritage Sarees
                 </span>
               </li>
                <li>
-                <span className="text-xs text-[#4a4a4a] font-inter">
+                <span className="text-sm text-[#4a4a4a] font-inter">
                  Evening Gowns
                 </span>
               </li>
@@ -90,7 +90,7 @@ export default function Footer() {
             <h4 className="text-xs font-inter font-semibold uppercase tracking-widest text-[#c9a465]">
               CONTACT
             </h4>
-            <ul className="space-y-2 text-xs text-[#4a4a4a] font-inter leading-relaxed">
+            <ul className="space-y-2 text-sm text-[#4a4a4a] font-inter leading-relaxed">
               <li>info@meibridal.com</li>
               <li>+91 98765 43210</li>
             </ul>
@@ -98,7 +98,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 pt-4 border-t border-[#e8e0d5]  sm:flex-row  items-center align-middle">
-          <p className="text-[10px] text-[#9a9a9a] uppercase tracking-wider font-inter text-center">
+          <p className="text-xs text-[#9a9a9a] uppercase tracking-wider font-inter text-center">
             © {new Date().getFullYear()} MEI Bridal Couture. All Rights Reserved.
           </p>
         </div>

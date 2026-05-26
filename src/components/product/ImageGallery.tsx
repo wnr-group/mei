@@ -44,7 +44,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
               className="object-cover"
             />
           </div>
-          <span className="hidden sm:inline-block text-[8px] sm:text-[9px] uppercase tracking-wider font-semibold text-[#4a4a4a] text-left leading-tight">
+          <span className="hidden sm:inline-block text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-[#4a4a4a] text-left leading-tight">
             Front view
           </span>
         </button>
@@ -66,7 +66,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
                 className="object-cover"
               />
             </div>
-            <span className="hidden sm:inline-block text-[8px] sm:text-[9px] uppercase tracking-wider font-semibold text-[#4a4a4a] text-left leading-tight">
+            <span className="hidden sm:inline-block text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-[#4a4a4a] text-left leading-tight">
               Embroidery detail
             </span>
           </button>

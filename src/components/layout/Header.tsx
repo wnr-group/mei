@@ -17,9 +17,9 @@ export default function Header() {
 
   const navLinks = [
     { href: "/", label: "Collections" },
-    { href: "", label: "New Arrivals" },
-    { href: "/shop?category=lehengas", label: "Lehengas" },
-    { href: "", label: "The Atelier" },
+    { href: "/new-arrivals", label: "New Arrivals" },
+    { href: "/shop", label: "Lehengas" },
+    { href: "/atelier", label: "The Atelier" },
     { href: "/contact", label: "Contact" },
   ];
 
@@ -37,7 +37,7 @@ export default function Header() {
               <h1 className="text-3xl font-bold tracking-[0.25em] uppercase text-[#c9a465] group-hover:text-[#d4b87a] transition-colors duration-300 font-inter select-none leading-none text-center">
                 MEI
               </h1>
-              <span className="block text-[8px] font-bold uppercase tracking-[0.35em] text-[#c9a465] group-hover:text-[#d4b87a] transition-colors duration-300 mt-1 font-inter text-center">
+              <span className="block text-[10px] font-bold uppercase tracking-[0.35em] text-[#c9a465] group-hover:text-[#d4b87a] transition-colors duration-300 mt-1 font-inter text-center">
                 BRIDAL COUTURE
               </span>
             </Link>
@@ -118,7 +118,7 @@ export default function Header() {
                 <Link
                   key={link.label}
                   href={link.href}
-                  className={`text-[10px] sm:text-xs font-inter font-medium uppercase tracking-[0.18em] transition-all pb-1.5 relative group hover:text-[#c9a465] ${
+                  className={`text-xs sm:text-[13px] font-inter font-medium uppercase tracking-[0.18em] transition-all pb-1.5 relative group hover:text-[#c9a465] ${
                     isActive ? "text-[#c9a465]" : "text-[#4a4a4a]"
                   }`}
                 >

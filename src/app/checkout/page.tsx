@@ -18,7 +18,7 @@ interface FormFieldProps {
 function FormField({ id, label, placeholder, value, error, onChange, type = "text" }: FormFieldProps) {
   return (
     <div className="w-full space-y-1">
-      <label htmlFor={id} className="block text-[9px] font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
+      <label htmlFor={id} className="block text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
         {label}
       </label>
       <input
@@ -31,7 +31,7 @@ function FormField({ id, label, placeholder, value, error, onChange, type = "tex
           error ? "border-red-500 focus:border-red-500" : "border-[#e8e0d5]"
         }`}
       />
-      {error && <p className="text-[9px] text-red-500 font-inter mt-0.5">{error}</p>}
+      {error && <p className="text-xs text-red-500 font-inter mt-0.5">{error}</p>}
     </div>
   );
 }
@@ -154,7 +154,7 @@ export default function CheckoutPage() {
             <p className="text-xs uppercase tracking-widest text-[#c9a465] font-semibold">
               Order Reference: {orderId}
             </p>
-            <p className="text-xs text-[#4a4a4a] leading-relaxed pt-2">
+            <p className="text-sm text-[#4a4a4a] leading-relaxed pt-2">
               Your handcrafted bridal piece is registered in our atelier systems. We will reach out to you within 24 hours to confirm your measurements and begin production.
             </p>
           </div>
@@ -182,7 +182,7 @@ export default function CheckoutPage() {
             Checkout
           </h1>
           {/* Steps */}
-          <div className="flex justify-center items-center space-x-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#9a9a9a] font-inter">
+          <div className="flex justify-center items-center space-x-3 text-xs font-bold uppercase tracking-[0.2em] text-[#9a9a9a] font-inter">
             <span className="text-[#1a1a1a]">1 Contact</span>
             <span className="text-[#e8e0d5] font-light">—</span>
             <span>2 Shipping</span>
@@ -319,7 +319,7 @@ export default function CheckoutPage() {
                       <h3 className="text-xs font-semibold text-[#1a1a1a] leading-tight">
                         {item.name}
                       </h3>
-                      <p className="text-[10px] text-[#9a9a9a] uppercase tracking-wider font-medium">
+                      <p className="text-xs text-[#9a9a9a] uppercase tracking-wider font-medium">
                         QTY: {item.quantity}
                       </p>
                       <p className="text-xs font-semibold text-[#1a1a1a] pt-1">
@@ -336,12 +336,12 @@ export default function CheckoutPage() {
             {/* Calculations */}
             <div className="space-y-3 text-xs tracking-wide">
               <div className="flex justify-between text-[#4a4a4a] font-medium">
-                <span className="uppercase text-[10px] tracking-widest font-bold">Subtotal</span>
+                <span className="uppercase text-xs tracking-widest font-bold">Subtotal</span>
                 <span>{formatPrice(subtotalVal)}</span>
               </div>
               <div className="flex justify-between text-[#4a4a4a] font-medium">
-                <span className="uppercase text-[10px] tracking-widest font-bold">Shipping</span>
-                <span className="text-[#c9a465] uppercase font-bold text-[10px] tracking-widest">Free</span>
+                <span className="uppercase text-xs tracking-widest font-bold">Shipping</span>
+                <span className="text-[#c9a465] uppercase font-bold text-xs tracking-widest">Free</span>
               </div>
             </div>
 
@@ -362,7 +362,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={isSubmitting || items.length === 0}
-                className="w-full bg-[#c9a465] hover:bg-[#d4b87a] text-white py-4 text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center"
+                className="w-full bg-[#c9a465] hover:bg-[#d4b87a] text-white py-4 text-sm font-bold uppercase tracking-[0.2em] transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center"
               >
                 {isSubmitting ? (
                   <>
@@ -392,7 +392,7 @@ export default function CheckoutPage() {
                   `Pay Now — ${formatPrice(subtotalVal)}`
                 )}
               </button>
-              <p className="text-center text-[9px] uppercase tracking-widest text-[#9a9a9a] font-bold select-none">
+              <p className="text-center text-xs uppercase tracking-widest text-[#9a9a9a] font-bold select-none">
                 🔒 Secured by Razorpay
               </p>
             </div>

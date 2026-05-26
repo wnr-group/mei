@@ -89,7 +89,7 @@ export default function ContactPage() {
             <p className="text-xs uppercase tracking-widest text-[#c9a465] font-semibold">
               Bespoke Bridal Consultation
             </p>
-            <p className="text-xs text-[#4a4a4a] leading-relaxed pt-2">
+            <p className="text-sm text-[#4a4a4a] leading-relaxed pt-2">
               Thank you for sharing your design vision. Our Senior Atelier Representative will contact you via WhatsApp or phone call within 24 hours to schedule your virtual or in-person design consultation.
             </p>
           </div>
@@ -114,7 +114,7 @@ export default function ContactPage() {
           <h1 className="text-4xl sm:text-5xl font-light tracking-wide text-[#1a1a1a] font-cormorant">
             Get a Custom Quote
           </h1>
-          <p className="text-xs sm:text-sm text-[#4a4a4a] leading-relaxed font-light font-inter">
+          <p className="text-sm sm:text-base text-[#4a4a4a] leading-relaxed font-light font-inter">
             Tell us about your dream outfit and we'll craft it exclusively for you.
             <br />
             Experience the journey of bespoke Indian couture.
@@ -130,7 +130,7 @@ export default function ContactPage() {
         >
           {/* Full Name */}
           <div className="space-y-1.5">
-            <label className="block text-[9px] font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
+            <label className="block text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
               Full Name
             </label>
             <input
@@ -143,13 +143,13 @@ export default function ContactPage() {
                 errors.name ? "border-red-500" : "border-[#e8e0d5]"
               }`}
             />
-            {errors.name && <p className="text-[9px] text-red-500">{errors.name}</p>}
+            {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
           </div>
 
           {/* Email & Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-1.5">
-              <label className="block text-[9px] font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
+              <label className="block text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
                 Email
               </label>
               <input
@@ -162,11 +162,11 @@ export default function ContactPage() {
                   errors.email ? "border-red-500" : "border-[#e8e0d5]"
                 }`}
               />
-              {errors.email && <p className="text-[9px] text-red-500">{errors.email}</p>}
+              {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-[9px] font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
+              <label className="block text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
                 Phone Number
               </label>
               <input
@@ -179,14 +179,14 @@ export default function ContactPage() {
                   errors.phone ? "border-red-500" : "border-[#e8e0d5]"
                 }`}
               />
-              {errors.phone && <p className="text-[9px] text-red-500">{errors.phone}</p>}
+              {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
             </div>
           </div>
 
           {/* Occasion & Budget */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-1.5">
-              <label className="block text-[9px] font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
+              <label className="block text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
                 Occasion
               </label>
               <select
@@ -204,11 +204,11 @@ export default function ContactPage() {
                 <option value="groom">Groom Wear</option>
                 <option value="other">Bespoke Couture</option>
               </select>
-              {errors.occasion && <p className="text-[9px] text-red-500">{errors.occasion}</p>}
+              {errors.occasion && <p className="text-xs text-red-500">{errors.occasion}</p>}
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-[9px] font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
+              <label className="block text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
                 Budget Range
               </label>
               <select
@@ -226,13 +226,13 @@ export default function ContactPage() {
                 <option value="3l-5l">₹3,00,000 - ₹5,00,000</option>
                 <option value="above-5l">₹5,00,000+</option>
               </select>
-              {errors.budget && <p className="text-[9px] text-red-500">{errors.budget}</p>}
+              {errors.budget && <p className="text-xs text-red-500">{errors.budget}</p>}
             </div>
           </div>
 
           {/* Message */}
           <div className="space-y-1.5">
-            <label className="block text-[9px] font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
+            <label className="block text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
               Message
             </label>
             <textarea
@@ -263,7 +263,7 @@ export default function ContactPage() {
             <h2 className="text-3xl font-light tracking-wide text-[#1a1a1a] font-cormorant">
               The Bespoke Experience
             </h2>
-            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#c9a465]">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#c9a465]">
               Pure Craftsmanship
             </p>
           </div>
@@ -292,7 +292,7 @@ export default function ContactPage() {
               <h3 className="text-base font-light tracking-wide text-[#1a1a1a] font-cormorant uppercase">
                 Exclusive Design
               </h3>
-              <p className="text-xs text-[#6a6a6a] leading-relaxed font-light">
+              <p className="text-sm text-[#6a6a6a] leading-relaxed font-light">
                 One-of-a-kind silhouettes tailored to your personal aesthetic and wedding vision.
               </p>
             </div>
@@ -324,7 +324,7 @@ export default function ContactPage() {
               <h3 className="text-base font-light tracking-wide text-[#1a1a1a] font-cormorant uppercase">
                 Master Artisans
               </h3>
-              <p className="text-xs text-[#6a6a6a] leading-relaxed font-light">
+              <p className="text-sm text-[#6a6a6a] leading-relaxed font-light">
                 Handcrafted by veteran karigars using centuries-old Zardosi and Aari techniques.
               </p>
             </div>
@@ -351,7 +351,7 @@ export default function ContactPage() {
               <h3 className="text-base font-light tracking-wide text-[#1a1a1a] font-cormorant uppercase">
                 Perfect Fit
               </h3>
-              <p className="text-xs text-[#6a6a6a] leading-relaxed font-light">
+              <p className="text-sm text-[#6a6a6a] leading-relaxed font-light">
                 Rigorous measurement and trial process to ensure flawless movement and drape.
               </p>
             </div>

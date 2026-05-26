@@ -88,16 +88,16 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
 
             {/* Description */}
             <div className="space-y-4">
-              <p className="text-xs text-[#4a4a4a] leading-relaxed font-light">
+              <p className="text-sm text-[#4a4a4a] leading-relaxed font-light">
                 {product.description}
               </p>
 
               {/* Craft tags */}
               <div className="flex flex-wrap gap-3 pt-2">
-                <span className="border border-[#c9a465] text-[#c9a465] text-[10px] font-bold uppercase tracking-widest px-4 py-2 select-none">
+                <span className="border border-[#c9a465] text-[#c9a465] text-xs font-bold uppercase tracking-widest px-4 py-2 select-none">
                   {product.craftType}
                 </span>
-                <span className="border border-[#c9a465] text-[#c9a465] text-[10px] font-bold uppercase tracking-widest px-4 py-2 select-none">
+                <span className="border border-[#c9a465] text-[#c9a465] text-xs font-bold uppercase tracking-widest px-4 py-2 select-none">
                   Hand-Embroidered
                 </span>
               </div>
@@ -107,7 +107,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
             <div className="space-y-3 pt-6">
               <button
                 onClick={handleAddToCart}
-                className="w-full bg-[#c9a465] hover:bg-[#d4b87a] text-white py-4 text-xs font-semibold uppercase tracking-widest transition-colors duration-300 cursor-pointer text-center"
+                className="w-full bg-[#c9a465] hover:bg-[#d4b87a] text-white py-4 text-sm font-semibold uppercase tracking-widest transition-colors duration-300 cursor-pointer text-center"
               >
                 {isAdded ? "Added to Cart" : "Add to Cart"}
               </button>
@@ -116,7 +116,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
                 href={`https://wa.me/919876543210?text=Hi,%20I'm%20interested%20in%20inquiring%20about%20${encodeURIComponent(product.name)}.`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full border border-[#25d366] text-[#25d366] hover:bg-[#25d366]/5 py-4 text-xs font-semibold uppercase tracking-widest transition-colors duration-300 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full border border-[#25d366] text-[#25d366] hover:bg-[#25d366]/5 py-4 text-sm font-semibold uppercase tracking-widest transition-colors duration-300 cursor-pointer flex items-center justify-center gap-2"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

@@ -40,7 +40,7 @@ export default function CartPage() {
           <h1 className="text-4xl font-light tracking-wide text-[#1a1a1a] font-cormorant">
             Your Cart
           </h1>
-          <p className="text-xs text-[#9a9a9a] uppercase tracking-wider mt-1 font-inter">
+          <p className="text-sm text-[#9a9a9a] uppercase tracking-wider mt-1 font-inter">
             {items.length === 1 ? "1 Item" : `${items.length} items`} 
           </p>
         </div>
@@ -65,7 +65,7 @@ export default function CartPage() {
               <h2 className="text-sm font-medium uppercase tracking-wider text-[#1a1a1a]">
                 Your Cart is Empty
               </h2>
-              <p className="text-xs text-[#9a9a9a]">
+              <p className="text-sm text-[#9a9a9a]">
                 Add handcrafted couture lehengas or sarees from our catalogs.
               </p>
             </div>
@@ -99,7 +99,7 @@ export default function CartPage() {
 
                     {/* Details */}
                     <div className="space-y-1">
-                      <span className="text-[10px] uppercase tracking-widest text-[#c9a465] font-semibold">
+                      <span className="text-xs uppercase tracking-widest text-[#c9a465] font-semibold">
                         {item.craftType}
                       </span>
                       <h3 className="text-base font-light text-[#1a1a1a] font-inter">
@@ -135,7 +135,7 @@ export default function CartPage() {
                     {/* Remove button */}
                     <button
                       onClick={() => removeItem(item.id)}
-                      className="text-xs uppercase tracking-widest font-medium text-[#9a9a9a] hover:text-red-500 transition-colors cursor-pointer"
+                      className="text-sm uppercase tracking-widest font-medium text-[#9a9a9a] hover:text-red-500 transition-colors cursor-pointer"
                     >
                       Remove
                     </button>
@@ -150,7 +150,7 @@ export default function CartPage() {
                 Order Summary
               </h2>
 
-              <div className="space-y-4 text-xs">
+              <div className="space-y-4 text-sm">
                 <div className="flex justify-between text-[#4a4a4a]">
                   <span>Subtotal</span>
                   <span className="font-semibold text-[#1a1a1a]">
@@ -168,7 +168,7 @@ export default function CartPage() {
               <hr className="border-[#e8e0d5]" />
 
               <div className="flex justify-between items-baseline">
-                <span className="text-xs font-semibold uppercase tracking-widest text-[#1a1a1a]">
+                <span className="text-sm font-semibold uppercase tracking-widest text-[#1a1a1a]">
                   Total
                 </span>
                 <span className="text-xl font-inter font-bold text-[#c9a465]">
@@ -179,13 +179,13 @@ export default function CartPage() {
               <div className="space-y-3 pt-2">
                 <Link
                   href="/checkout"
-                  className="block w-full bg-[#c9a465] hover:bg-[#d4b87a] text-white py-4 text-xs font-semibold uppercase tracking-widest text-center transition-colors duration-300"
+                  className="block w-full bg-[#c9a465] hover:bg-[#d4b87a] text-white py-4 text-sm font-semibold uppercase tracking-widest text-center transition-colors duration-300"
                 >
                   Proceed to Checkout
                 </Link>
                 <Link
                   href="/shop"
-                  className="block text-center text-xs uppercase tracking-widest text-[#9a9a9a] hover:text-[#c9a465] transition-colors duration-300 font-semibold"
+                  className="block text-center text-sm uppercase tracking-widest text-[#9a9a9a] hover:text-[#c9a465] transition-colors duration-300 font-semibold"
                 >
                   Continue Shopping
                 </Link>

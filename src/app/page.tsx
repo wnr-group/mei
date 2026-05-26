@@ -72,13 +72,13 @@ const featuredProducts = MOCK_PRODUCTS.slice(0, 8);
                 />
                 {/* Overlay details */}
                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-500 flex flex-col justify-end p-6 space-y-1.5 font-inter">
-                  <span className="text-[10px] uppercase tracking-widest text-[#c9a465] font-semibold">
+                  <span className="text-xs uppercase tracking-widest text-[#c9a465] font-semibold">
                     {cat.subtitle}
                   </span>
-                  <h3 className="text-lg font-light text-white uppercase tracking-wider font-cormorant">
+                  <h3 className="text-xl font-light text-white uppercase tracking-wider font-cormorant">
                     {cat.name}
                   </h3>
-                  <p className="text-[10px] text-white/70 uppercase tracking-widest font-semibold border-b border-white/40 pb-1 w-max group-hover:border-white transition-colors duration-300">
+                  <p className="text-xs text-white/70 uppercase tracking-widest font-semibold border-b border-white/40 pb-1 w-max group-hover:border-white transition-colors duration-300">
                     Explore
                   </p>
                 </div>
@@ -146,7 +146,7 @@ const featuredProducts = MOCK_PRODUCTS.slice(0, 8);
                 className={`group relative aspect-square w-full flex items-end justify-center pb-8 ${craft.bg} hover:brightness-110 transition-all duration-500 hover:scale-[1.01] overflow-hidden border border-[#e8e0d5]/10`}
               >
                 <div className="text-center z-10">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/90 group-hover:text-white transition-colors duration-300">
+                  <span className="text-xs font-bold uppercase tracking-[0.25em] text-white/90 group-hover:text-white transition-colors duration-300">
                     {craft.label}
                   </span>
                 </div>
@@ -162,12 +162,12 @@ const featuredProducts = MOCK_PRODUCTS.slice(0, 8);
           <h2 className="text-3xl sm:text-4xl font-light tracking-wide text-[#1a1a1a] font-cormorant">
             Looking for Something Bespoke?
           </h2>
-          <p className="text-xs sm:text-sm text-[#4a4a4a] leading-relaxed max-w-lg mx-auto font-light">
+          <p className="text-sm sm:text-base text-[#4a4a4a] leading-relaxed max-w-lg mx-auto font-light">
             Work with our master artisans to create a one-of-a-kind masterpiece tailored perfectly to your vision and measurements.
           </p>
           <div className="pt-2">
             <Link
-              href="/custom-quote"
+              href="/contact"
               className="inline-block bg-[#c9a465] hover:bg-[#d4b87a] text-white py-4 px-10 text-xs font-semibold uppercase tracking-widest transition-colors duration-300"
             >
               Get a Custom Quote

@@ -50,7 +50,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       </button>
 
       {/* Gold Craft Badge (Top Left) */}
-      <div className="absolute top-3 left-3 z-10 bg-[#c9a465] text-white px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest select-none shadow-sm">
+      <div className="absolute top-3 left-3 z-10 bg-[#c9a465] text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest select-none shadow-sm">
         {product.craftType}
       </div>
 
@@ -70,10 +70,10 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Product Info */}
         <div className="space-y-1 pt-2 flex flex-col font-inter">
-          <h3 className="text-xs font-semibold text-[#1a1a1a] group-hover:text-[#c9a465] transition-colors duration-300">
+          <h3 className="text-sm font-semibold text-[#1a1a1a] group-hover:text-[#c9a465] transition-colors duration-300">
             {product.name}
           </h3>
-          <p className="text-[11px] font-medium text-[#c9a465]">
+          <p className="text-sm font-medium text-[#c9a465]">
             {formatPrice(product.price)}
           </p>
         </div>
