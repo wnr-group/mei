@@ -64,7 +64,7 @@ const featuredProducts = MOCK_PRODUCTS.slice(0, 8);
               >
                 {/* Category Image */}
                 <Image
-                  src={cat.image}
+                  src={cat.image_url || "/images/rose_lehenga.png"}
                   alt={cat.name}
                   fill
                   sizes="(max-w-7xl) 33vw, 100vw"
