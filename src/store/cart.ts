@@ -1,14 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-export type CartItem = {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  craftType: string;
-  quantity: number;
-};
+import type { CartItem } from "@/types";
 
 type CartStore = {
   items: CartItem[];
@@ -63,3 +55,5 @@ export const useCartStore = create<CartStore>()(
     { name: "mei-cart" }
   )
 );
+
+export type { CartItem };
