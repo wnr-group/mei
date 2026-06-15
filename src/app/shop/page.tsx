@@ -18,31 +18,22 @@ export default function ShopPage() {
 
   // Filter products based on selected craft
   const filteredProducts = useMemo(() => {
-    let result = [...MOCK_PRODUCTS];
+    if (activeFilter === "ALL") return [...MOCK_PRODUCTS];
 
-    if (activeFilter === "ALL") {
-      return result;
-    }
+    return MOCK_PRODUCTS.filter((product) => {
+      const types = product.work_types.map((t) => t.toLowerCase());
 
-    return result.filter((product) => {
-      const craft = product.craftType.toLowerCase();
-      
-      if (activeFilter === "AARI WORK") {
-        return craft.includes("aari");
-      }
-      if (activeFilter === "ZARDOSI") {
-        return craft.includes("zardosi") || craft.includes("dabka");
-      }
-      if (activeFilter === "MIRROR WORK") {
-        return craft.includes("mirror");
-      }
-      if (activeFilter === "THREAD EMBROIDERY") {
-        return craft.includes("resham") || craft.includes("thread") || craft.includes("pita");
-      }
-      if (activeFilter === "CUT WORK") {
-        return craft.includes("cut");
-      }
-      
+      if (activeFilter === "AARI WORK")
+        return types.some((t) => t.includes("aari"));
+      if (activeFilter === "ZARDOSI")
+        return types.some((t) => t.includes("zardosi") || t.includes("dabka"));
+      if (activeFilter === "MIRROR WORK")
+        return types.some((t) => t.includes("mirror"));
+      if (activeFilter === "THREAD EMBROIDERY")
+        return types.some((t) => t.includes("resham") || t.includes("thread") || t.includes("pita"));
+      if (activeFilter === "CUT WORK")
+        return types.some((t) => t.includes("cut"));
+
       return true;
     });
   }, [activeFilter]);
