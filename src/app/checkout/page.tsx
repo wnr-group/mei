@@ -306,14 +306,20 @@ export default function CheckoutPage() {
               <div className="space-y-6">
                 {items.map((item) => (
                   <div key={item.id} className="flex space-x-4 items-center">
-                    <div className="relative w-16 h-20 bg-white border border-[#e8e0d5]/40 flex-shrink-0">
-                      <Image
-                        src={item.image}
-                        alt="Product Thumbnail"
-                        fill
-                        sizes="64px"
-                        className="object-cover"
-                      />
+                    <div className="relative w-16 h-20 bg-white border border-[#e8e0d5]/40 flex-shrink-0 flex items-center justify-center">
+                      {item.image ? (
+                        <Image
+                          src={item.image}
+                          alt="Product Thumbnail"
+                          fill
+                          sizes="64px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <span className="text-[#9a9a9a] text-[8px] uppercase tracking-wider font-semibold select-none text-center px-1">
+                          No Image
+                        </span>
+                      )}
                     </div>
                     <div className="space-y-1">
                       <h3 className="text-xs font-semibold text-[#1a1a1a] leading-tight">

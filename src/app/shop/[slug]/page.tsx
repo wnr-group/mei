@@ -43,7 +43,7 @@ export default async function ProductDetailPage({ params }: Props) {
             <Link
               href={
                 product.category
-                  ? `/shop/category/${product.category.slug}`
+                  ? `/shop/${product.category.slug}`
                   : "/shop"
               }
               className="hover:text-[#c9a465] transition-colors"

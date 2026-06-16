@@ -10,14 +10,15 @@ interface ImageGalleryProps {
 export default function ImageGallery({ images }: ImageGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  if (!images || images.length === 0) return null;
+  const validImages = (images || []).filter(Boolean);
+  if (validImages.length === 0) return null;
 
   return (
     <div className="space-y-6">
       {/* Main Image View */}
       <div className="relative aspect-[3/4] w-full bg-[#faf8f5] border border-[#e8e0d5]/40">
         <Image
-          src={images[activeIndex]}
+          src={validImages[activeIndex]}
           alt="Featured bridal lehenga main view"
           fill
           priority
@@ -37,7 +38,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
         >
           <div className="relative w-10 h-14 flex-shrink-0 bg-[#faf8f5]">
             <Image
-              src={images[0]}
+              src={validImages[0]}
               alt="Front view preview"
               fill
               sizes="40px"
@@ -50,7 +51,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
         </button>
 
         {/* Thumbnail 2: Embroidery detail */}
-        {images[1] ? (
+        {validImages[1] ? (
           <button
             onClick={() => setActiveIndex(1)}
             className={`flex items-center justify-center sm:justify-start space-x-0 sm:space-x-2 p-1.5 sm:p-2 border bg-white cursor-pointer h-20 transition-all duration-300 ${
@@ -59,7 +60,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
           >
             <div className="relative w-10 h-14 flex-shrink-0 bg-[#faf8f5]">
               <Image
-                src={images[1]}
+                src={validImages[1]}
                 alt="Embroidery detail preview"
                 fill
                 sizes="40px"

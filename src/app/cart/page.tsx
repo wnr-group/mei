@@ -87,14 +87,20 @@ export default function CartPage() {
                 >
                   <div className="flex items-center space-x-6">
                     {/* Item Image */}
-                    <div className="relative w-24 h-32 bg-[#faf8f5] flex-shrink-0 border border-[#e8e0d5]/40">
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        sizes="96px"
-                        className="object-cover"
-                      />
+                    <div className="relative w-24 h-32 bg-[#faf8f5] flex-shrink-0 border border-[#e8e0d5]/40 flex items-center justify-center">
+                      {item.image ? (
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          fill
+                          sizes="96px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <span className="text-[#9a9a9a] text-[10px] uppercase tracking-wider font-semibold select-none">
+                          No Image
+                        </span>
+                      )}
                     </div>
 
                     {/* Details */}

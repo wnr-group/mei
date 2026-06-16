@@ -60,7 +60,7 @@ export default async function Home() {
               {categories.map((cat) => (
                 <Link
                   key={cat.id}
-                  href={`/shop/category/${cat.slug}`}
+                  href={`/shop/${cat.slug}`}
                   className="group relative h-96 w-full overflow-hidden border border-[#e8e0d5]/40"
                 >
                   <Image
