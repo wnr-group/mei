@@ -41,7 +41,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
       name: product.name,
       price: product.price,
       image: product.images[0],
-      craftType: product.craftType,
+      work_types: product.work_types,
     });
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
@@ -57,7 +57,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
           </Link>{" "}
           /{" "}
           <Link href="/shop" className="hover:text-[#c9a465] transition-colors">
-            {product.categoryName}
+            {product.category?.name ?? "Shop"}
           </Link>{" "}
           / <span className="text-[#1a1a1a]">{product.name}</span>
         </nav>
@@ -76,7 +76,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
             {/* Headers */}
             <div className="space-y-3">
               <span className="text-xs uppercase tracking-widest text-[#9a9a9a] font-medium block">
-                {product.categoryName}
+                {product.category?.name ?? ""}
               </span>
               <h1 className="text-3xl sm:text-4xl font-light tracking-wide text-[#1a1a1a] font-cormorant">
                 {product.name}
@@ -94,9 +94,11 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
 
               {/* Craft tags */}
               <div className="flex flex-wrap gap-3 pt-2">
-                <span className="border border-[#c9a465] text-[#c9a465] text-xs font-bold uppercase tracking-widest px-4 py-2 select-none">
-                  {product.craftType}
-                </span>
+                {product.work_types.map((type) => (
+                  <span key={type} className="border border-[#c9a465] text-[#c9a465] text-xs font-bold uppercase tracking-widest px-4 py-2 select-none">
+                    {type}
+                  </span>
+                ))}
                 <span className="border border-[#c9a465] text-[#c9a465] text-xs font-bold uppercase tracking-widest px-4 py-2 select-none">
                   Hand-Embroidered
                 </span>
