@@ -83,6 +83,29 @@ describe("_mapDbRowToProduct", () => {
     const p = _mapDbRowToProduct(row as Parameters<typeof _mapDbRowToProduct>[0]);
     expect(p.images).toEqual(["/img/fallback.png"]);
   });
+
+  it("preserves Supabase image_url values", () => {
+    const url =
+      "https://example.supabase.co/storage/v1/object/public/product-images/test.jpg";
+
+    const p = _mapDbRowToProduct(
+      baseRow({
+        product_media: [],
+        image_url: url,
+      })
+    );
+
+    expect(p.image_url).toBe(url);
+    expect(p.images).toEqual([url]);
+  });
+
+  it("returns empty images array when product_media is empty and image_url is null", () => {
+    const p = _mapDbRowToProduct(
+      baseRow({ product_media: [], image_url: null })
+    );
+    expect(p.images).toEqual([]);
+    expect(p.image_url).toBeNull();
+  });
 });
 
 // --- Service-level tests ---
