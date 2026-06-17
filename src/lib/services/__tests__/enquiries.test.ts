@@ -7,14 +7,10 @@ vi.mock("@supabase/supabase-js", () => ({
 }));
 
 function makeInsertChain(result: {
-  data: { id: string } | null;
   error: null | { message: string; code?: string };
 }) {
   const chain: Record<string, ReturnType<typeof vi.fn>> = {};
-  const self = () => chain;
-  chain.insert = vi.fn(self);
-  chain.select = vi.fn(self);
-  chain.single = vi.fn().mockResolvedValue(result);
+  chain.insert = vi.fn().mockResolvedValue(result);
   return chain;
 }
 
@@ -34,13 +30,12 @@ beforeEach(() => {
 });
 
 describe("createEnquiry", () => {
-  it("trims all string fields and inserts with status NEW, returns id", async () => {
-    const chain = makeInsertChain({ data: { id: "enq-1" }, error: null });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+  it("trims all string fields and inserts with status NEW", async () => {
+    const chain = makeInsertChain({ error: null });
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
-    const result = await createEnquiry(validInput);
+    await createEnquiry(validInput);
 
-    expect(result).toEqual({ id: "enq-1" });
     expect(chain.insert).toHaveBeenCalledWith(
       expect.objectContaining({
         name: "Priya Sharma",
@@ -52,8 +47,8 @@ describe("createEnquiry", () => {
   });
 
   it("coerces empty-string optional fields to null", async () => {
-    const chain = makeInsertChain({ data: { id: "enq-2" }, error: null });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    const chain = makeInsertChain({ error: null });
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     await createEnquiry({ ...validInput, phone: "  ", occasion: "", budget: "" });
 
@@ -63,8 +58,8 @@ describe("createEnquiry", () => {
   });
 
   it("throws (and logs) on Supabase error", async () => {
-    const chain = makeInsertChain({ data: null, error: { message: "Insert failed" } });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    const chain = makeInsertChain({ error: { message: "Insert failed" } });
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     await expect(createEnquiry(validInput)).rejects.toMatchObject({ message: "Insert failed" });
@@ -73,5 +68,51 @@ describe("createEnquiry", () => {
       expect.anything()
     );
     spy.mockRestore();
+  });
+
+  it("passes measurements through to insert when provided", async () => {
+    const chain = makeInsertChain({ error: null });
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
+
+    const measurements = { bust: "34in", waist: "26in", hip: "36in", shoulder: "14in", length: "42in", sleeve: "24in" };
+    await createEnquiry({ ...validInput, measurements });
+
+    expect(chain.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ measurements })
+    );
+  });
+
+  it("passes null measurements when not provided", async () => {
+    const chain = makeInsertChain({ error: null });
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
+
+    await createEnquiry(validInput);
+
+    expect(chain.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ measurements: null })
+    );
+  });
+
+  it("passes reference_images through to insert when referenceImages provided", async () => {
+    const chain = makeInsertChain({ error: null });
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
+
+    const referenceImages = ["https://example.com/img1.jpg", "https://example.com/img2.jpg"];
+    await createEnquiry({ ...validInput, referenceImages });
+
+    expect(chain.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ reference_images: referenceImages })
+    );
+  });
+
+  it("passes null reference_images when referenceImages not provided", async () => {
+    const chain = makeInsertChain({ error: null });
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
+
+    await createEnquiry(validInput);
+
+    expect(chain.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ reference_images: null })
+    );
   });
 });

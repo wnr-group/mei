@@ -1,6 +1,15 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database";
 
+export interface EnquiryMeasurements {
+  bust?: string | null;
+  waist?: string | null;
+  hip?: string | null;
+  shoulder?: string | null;
+  length?: string | null;
+  sleeve?: string | null;
+}
+
 export interface CreateEnquiryInput {
   name: string;
   email: string;
@@ -8,6 +17,8 @@ export interface CreateEnquiryInput {
   occasion: string;
   budget: string;
   message: string;
+  measurements?: EnquiryMeasurements | null;
+  referenceImages?: string[] | null;
 }
 
 function getServiceClient() {
@@ -20,9 +31,7 @@ function getServiceClient() {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SupabaseClient = any;
 
-export async function createEnquiry(
-  input: CreateEnquiryInput
-): Promise<{ id: string }> {
+export async function createEnquiry(input: CreateEnquiryInput): Promise<void> {
   const supabase = getServiceClient() as SupabaseClient;
 
   const row: SupabaseClient = {
@@ -32,19 +41,15 @@ export async function createEnquiry(
     occasion: input.occasion.trim() || null,
     budget: input.budget.trim() || null,
     message: input.message.trim(),
+    measurements: input.measurements ?? null,
+    reference_images: input.referenceImages ?? null,
     status: "NEW",
   };
 
-  const { data, error } = await supabase
-    .from("enquiries")
-    .insert(row)
-    .select("id")
-    .single() as SupabaseClient;
+  const { error } = await supabase.from("enquiries").insert(row) as SupabaseClient;
 
   if (error) {
     console.error("[EnquiriesService:createEnquiry]", error);
     throw error;
   }
-
-  return { id: data.id };
 }

@@ -22,7 +22,7 @@ beforeEach(() => {
 
 describe("submitEnquiry", () => {
   it("returns success when createEnquiry resolves", async () => {
-    vi.mocked(createEnquiry).mockResolvedValue({ id: "enq-1" });
+    vi.mocked(createEnquiry).mockResolvedValue(undefined);
 
     const result = await submitEnquiry(validData);
 
@@ -75,5 +75,25 @@ describe("submitEnquiry", () => {
     const result = await submitEnquiry({ ...validData, budget: "" });
     expect(result).toEqual({ success: false, error: "Please select a budget range." });
     expect(createEnquiry).not.toHaveBeenCalled();
+  });
+
+  it("forwards measurements to createEnquiry when provided", async () => {
+    vi.mocked(createEnquiry).mockResolvedValue(undefined);
+    const measurements = { bust: "34in", waist: "26in" };
+
+    const result = await submitEnquiry({ ...validData, measurements });
+
+    expect(result).toEqual({ success: true });
+    expect(createEnquiry).toHaveBeenCalledWith(expect.objectContaining({ measurements }));
+  });
+
+  it("forwards referenceImages to createEnquiry when provided", async () => {
+    vi.mocked(createEnquiry).mockResolvedValue(undefined);
+    const referenceImages = ["https://example.com/img1.jpg"];
+
+    const result = await submitEnquiry({ ...validData, referenceImages });
+
+    expect(result).toEqual({ success: true });
+    expect(createEnquiry).toHaveBeenCalledWith(expect.objectContaining({ referenceImages }));
   });
 });
