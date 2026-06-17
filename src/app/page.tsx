@@ -63,13 +63,17 @@ export default async function Home() {
                   href={`/shop/${cat.slug}`}
                   className="group relative h-96 w-full overflow-hidden border border-[#e8e0d5]/40"
                 >
-                  <Image
-                    src={cat.image_url ?? "/images/rose_lehenga.png"}
-                    alt={cat.name}
-                    fill
-                    sizes="(max-width: 1280px) 33vw, 100vw"
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                  />
+                  {cat.image_url ? (
+                    <Image
+                      src={cat.image_url}
+                      alt={cat.name}
+                      fill
+                      sizes="(max-width: 1280px) 33vw, 100vw"
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#a69c90] to-[#6b6460]" />
+                  )}
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-500 flex flex-col justify-end p-6 space-y-1.5 font-inter">
                     <span className="text-xs uppercase tracking-widest text-[#c9a465] font-semibold">
                       {cat.subtitle}
