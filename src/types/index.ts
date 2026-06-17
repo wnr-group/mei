@@ -3,11 +3,11 @@ export type Product = {
   name: string;
   slug: string;
   price: number;
-  images: string[];
+  image_url: string;
   shortDescription: string;
   description: string;
-  craftType: string;
-  categoryId: string;
+  work_types: string[];
+  category_id: string;
   categoryName: string;
   inStock: boolean;
 };

@@ -59,7 +59,7 @@ const featuredProducts = MOCK_PRODUCTS.slice(0, 8);
             {MOCK_CATEGORIES.map((cat) => (
               <Link
                 key={cat.id}
-                href="/shop"
+                href={`/shop/${cat.id}`}
                 className="group relative h-96 w-full overflow-hidden border border-[#e8e0d5]/40"
               >
                 {/* Category Image */}

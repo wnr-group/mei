@@ -115,7 +115,7 @@ export default function ContactPage() {
             Get a Custom Quote
           </h1>
           <p className="text-sm sm:text-base text-[#4a4a4a] leading-relaxed font-light font-inter">
-            Tell us about your dream outfit and we'll craft it exclusively for you.
+            {"Tell us about your dream outfit and we'll craft it exclusively for you."}
             <br />
             Experience the journey of bespoke Indian couture.
           </p>

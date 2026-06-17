@@ -51,14 +51,14 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Gold Craft Badge (Top Left) */}
       <div className="absolute top-3 left-3 z-10 bg-[#c9a465] text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest select-none shadow-sm">
-        {product.craftType}
+        {product.work_types?.[0] || "Custom Work"}
       </div>
 
-      <Link href={`/shop/${product.slug}`} className="block w-full">
+      <Link href={`/shop/${product.category_id}/${product.slug}`} className="block w-full">
         {/* Product Image Wrapper */}
         <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#faf8f5] border border-[#e8e0d5]/40">
           <Image
-            src={product.images[0]}
+            src={product.image_url || "/images/rose_lehenga.png"}
             alt={product.name}
             fill
             sizes="(max-w-7xl) 20vw, 50vw"

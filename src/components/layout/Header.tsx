@@ -12,13 +12,14 @@ export default function Header() {
 
   // Avoid hydration mismatch by waiting for mount
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
   const navLinks = [
-    { href: "/", label: "Collections" },
-    { href: "/new-arrivals", label: "New Arrivals" },
-    { href: "/shop", label: "Lehengas" },
+    { href: "/shop/bridal-jewellery", label: "Bridal Jewellery" },
+    { href: "/shop/designer-wear", label: "Designer Wear" },
+    { href: "/shop/customized-costumes", label: "Customized Costumes" },
     { href: "/atelier", label: "The Atelier" },
     { href: "/contact", label: "Contact" },
   ];
