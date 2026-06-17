@@ -4,12 +4,17 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/cart";
 
+const isSupabaseUrl = (url?: string | null) => {
+  return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
+};
+
 export default function OrderSummary() {
   const items = useCartStore((state) => state.items);
   const total = useCartStore((state) => state.total);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -47,6 +52,7 @@ export default function OrderSummary() {
                       fill
                       sizes="48px"
                       className="object-cover"
+                      unoptimized={isSupabaseUrl(item.image)}
                     />
                   ) : (
                     <span className="text-[#9a9a9a] text-[8px] uppercase tracking-wider font-semibold select-none text-center px-0.5">

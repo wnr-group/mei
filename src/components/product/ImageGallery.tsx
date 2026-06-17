@@ -7,6 +7,10 @@ interface ImageGalleryProps {
   images: string[];
 }
 
+const isSupabaseUrl = (url?: string | null) => {
+  return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
+};
+
 export default function ImageGallery({ images }: ImageGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -32,6 +36,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
           priority
           sizes="(max-w-7xl) 50vw, 100vw"
           className="object-cover"
+          unoptimized={isSupabaseUrl(validImages[activeIndex])}
         />
       </div>
 
@@ -51,6 +56,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
               fill
               sizes="40px"
               className="object-cover"
+              unoptimized={isSupabaseUrl(validImages[0])}
             />
           </div>
           <span className="hidden sm:inline-block text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-[#4a4a4a] text-left leading-tight">
@@ -73,6 +79,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
                 fill
                 sizes="40px"
                 className="object-cover"
+                unoptimized={isSupabaseUrl(validImages[1])}
               />
             </div>
             <span className="hidden sm:inline-block text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-[#4a4a4a] text-left leading-tight">

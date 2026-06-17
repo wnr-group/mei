@@ -166,7 +166,7 @@ describe("getProducts", () => {
     const chain = makeChain({ data: [fullProductRow], error: null });
     // override limit — getProducts uses .order() as terminal when no limit
     chain.order = vi.fn().mockResolvedValue({ data: [fullProductRow], error: null });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const result = await getProducts();
 
@@ -180,7 +180,7 @@ describe("getProducts", () => {
     const rows = [fullProductRow, { ...fullProductRow, id: "p2", slug: "p2" }];
     const chain = makeChain({ data: rows, error: null });
     chain.order = vi.fn().mockResolvedValue({ data: rows, error: null });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const result = await getProducts({ limit: 1 });
     expect(result).toHaveLength(1);
@@ -189,7 +189,7 @@ describe("getProducts", () => {
   it("throws (and logs) on Supabase error", async () => {
     const chain = makeChain({ data: null, error: { message: "DB error" } });
     chain.order = vi.fn().mockResolvedValue({ data: null, error: { message: "DB error" } });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     await expect(getProducts()).rejects.toMatchObject({ message: "DB error" });
@@ -204,7 +204,7 @@ describe("getProducts", () => {
 describe("getProductBySlug", () => {
   it("returns a mapped product when found", async () => {
     const chain = makeChain({ data: fullProductRow, error: null });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const p = await getProductBySlug("test-piece");
     expect(p).not.toBeNull();
@@ -215,7 +215,7 @@ describe("getProductBySlug", () => {
 
   it("returns null when not found", async () => {
     const chain = makeChain({ data: null, error: null });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const p = await getProductBySlug("nonexistent");
     expect(p).toBeNull();
@@ -223,7 +223,7 @@ describe("getProductBySlug", () => {
 
   it("throws on Supabase error", async () => {
     const chain = makeChain({ data: null, error: { message: "Query failed" } });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     await expect(getProductBySlug("x")).rejects.toMatchObject({ message: "Query failed" });
@@ -234,7 +234,7 @@ describe("getProductBySlug", () => {
 describe("getProductById", () => {
   it("returns a product when found", async () => {
     const chain = makeChain({ data: fullProductRow, error: null });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const p = await getProductById("p1");
     expect(p).not.toBeNull();
@@ -244,7 +244,7 @@ describe("getProductById", () => {
 
   it("returns null when not found", async () => {
     const chain = makeChain({ data: null, error: null });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
     expect(await getProductById("missing")).toBeNull();
   });
 });
@@ -253,7 +253,7 @@ describe("getRelatedProducts", () => {
   it("returns related products excluding the current one", async () => {
     const relatedRow = { ...fullProductRow, id: "p2", slug: "p2" };
     const chain = makeChain({ data: [relatedRow], error: null });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const result = await getRelatedProducts("cat1", "p1", 3);
     expect(result).toHaveLength(1);
@@ -273,7 +273,7 @@ describe("getProductsByCategory", () => {
   it("filters products by category slug via inner join", async () => {
     const chain = makeChain({ data: [fullProductRow], error: null });
     chain.order = vi.fn().mockResolvedValue({ data: [fullProductRow], error: null });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const result = await getProductsByCategory("lehengas");
     expect(result).toHaveLength(1);

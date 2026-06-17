@@ -6,6 +6,10 @@ import Button from "@/components/ui/Button";
 import { getProducts } from "@/lib/services/products";
 import { getCategories } from "@/lib/services/categories";
 
+const isSupabaseUrl = (url?: string | null) => {
+  return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
+};
+
 export default async function Home() {
   const [categories, products] = await Promise.all([
     getCategories(),
@@ -70,6 +74,7 @@ export default async function Home() {
                       fill
                       sizes="(max-width: 1280px) 33vw, 100vw"
                       className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      unoptimized={isSupabaseUrl(cat.image_url)}
                     />
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-[#a69c90] to-[#6b6460]" />

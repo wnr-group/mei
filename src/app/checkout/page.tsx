@@ -5,6 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCartStore } from "@/store/cart";
 
+const isSupabaseUrl = (url?: string | null) => {
+  return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
+};
+
 interface FormFieldProps {
   id: string;
   label: string;
@@ -59,6 +63,7 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -314,6 +319,7 @@ export default function CheckoutPage() {
                           fill
                           sizes="64px"
                           className="object-cover"
+                          unoptimized={isSupabaseUrl(item.image)}
                         />
                       ) : (
                         <span className="text-[#9a9a9a] text-[8px] uppercase tracking-wider font-semibold select-none text-center px-1">

@@ -120,7 +120,7 @@ describe("getCategories", () => {
   it("queries the categories table with active and non-deleted filters", async () => {
     const chain = makeChain({ data: [fullCategoryRow], error: null });
     chain.order = vi.fn().mockResolvedValue({ data: [fullCategoryRow], error: null });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const result = await getCategories();
 
@@ -134,7 +134,7 @@ describe("getCategories", () => {
   it("throws (and logs) on Supabase error", async () => {
     const chain = makeChain({ data: null, error: { message: "DB error" } });
     chain.order = vi.fn().mockResolvedValue({ data: null, error: { message: "DB error" } });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     await expect(getCategories()).rejects.toMatchObject({ message: "DB error" });
@@ -149,7 +149,7 @@ describe("getCategories", () => {
 describe("getCategoryBySlug", () => {
   it("returns a mapped category when found", async () => {
     const chain = makeChain({ data: fullCategoryRow, error: null });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const cat = await getCategoryBySlug("lehengas");
     expect(cat).not.toBeNull();
@@ -161,7 +161,7 @@ describe("getCategoryBySlug", () => {
 
   it("returns null when not found", async () => {
     const chain = makeChain({ data: null, error: null });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const cat = await getCategoryBySlug("nonexistent");
     expect(cat).toBeNull();
@@ -169,7 +169,7 @@ describe("getCategoryBySlug", () => {
 
   it("throws on Supabase error", async () => {
     const chain = makeChain({ data: null, error: { message: "Query failed" } });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as any);
+    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     await expect(getCategoryBySlug("x")).rejects.toMatchObject({ message: "Query failed" });

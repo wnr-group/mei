@@ -9,6 +9,10 @@ interface ProductCardProps {
   product: Product;
 }
 
+const isSupabaseUrl = (url?: string | null) => {
+  return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
+};
+
 export default function ProductCard({ product }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
@@ -64,6 +68,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               fill
               sizes="(max-w-7xl) 20vw, 50vw"
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              unoptimized={isSupabaseUrl(product.images[0] || product.image_url)}
             />
           ) : (
             <span className="text-[#9a9a9a] text-[10px] uppercase tracking-wider font-semibold select-none">

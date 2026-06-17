@@ -3,6 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+
+const isSupabaseUrl = (url?: string | null) => {
+  return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
+};
 import { useCartStore } from "@/store/cart";
 
 export default function CartPage() {
@@ -13,6 +17,7 @@ export default function CartPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -95,6 +100,7 @@ export default function CartPage() {
                           fill
                           sizes="96px"
                           className="object-cover"
+                          unoptimized={isSupabaseUrl(item.image)}
                         />
                       ) : (
                         <span className="text-[#9a9a9a] text-[10px] uppercase tracking-wider font-semibold select-none">

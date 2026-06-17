@@ -145,7 +145,7 @@ const _cachedGetProductBySlug = unstable_cache(
       .eq("slug", slug)
       .eq("status", "PUBLISHED")
       .is("deleted_at", null)
-      .maybeSingle() as { data: ProductWithRelations | null; error: any };
+      .maybeSingle() as { data: ProductWithRelations | null; error: { message: string } | null };
 
     if (error) {
       console.error("[ProductsService:getProductBySlug]", error);
