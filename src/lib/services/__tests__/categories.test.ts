@@ -62,6 +62,17 @@ describe("_mapDbRowToCategory", () => {
     expect(cat.is_active).toBe(false);
     expect(cat.sort_order).toBe(5);
   });
+
+  it("preserves Supabase image_url values", () => {
+    const url =
+      "https://example.supabase.co/storage/v1/object/public/category-images/lehengas.jpg";
+
+    const cat = _mapDbRowToCategory(
+      baseRow({ image_url: url })
+    );
+
+    expect(cat.image_url).toBe(url);
+  });
 });
 
 // --- Service-level tests ---
