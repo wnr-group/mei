@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { submitEnquiry } from "./actions";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -17,6 +18,7 @@ export default function ContactPage() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
@@ -49,17 +51,23 @@ export default function ContactPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    if (isSubmitting) return;
     if (!validate()) return;
 
     setIsSubmitting(true);
+    setSubmitError(null);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    const result = await submitEnquiry(formData);
+
+    setIsSubmitting(false);
+
+    if (result.success) {
       setSubmitted(true);
-    }, 1500);
+    } else {
+      setSubmitError(result.error);
+    }
   };
 
   if (submitted) {
@@ -244,6 +252,12 @@ export default function ContactPage() {
               className="w-full border border-[#e8e0d5] bg-white px-4 py-3 text-sm font-inter text-[#1a1a1a] placeholder:text-[#9a9a9a]/40 focus:outline-none focus:border-[#c9a465] rounded-none outline-none transition-colors duration-300 resize-none"
             />
           </div>
+
+          {submitError && (
+            <div role="alert" className="text-sm text-red-600 border border-red-200 bg-red-50 py-3 px-4 text-center">
+              {submitError}
+            </div>
+          )}
 
           {/* Submit */}
           <button
