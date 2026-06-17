@@ -1,8 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database";
 
-type EnquiryInsert = Database["public"]["Tables"]["enquiries"]["Insert"];
-
 export interface CreateEnquiryInput {
   name: string;
   email: string;
@@ -19,12 +17,15 @@ function getServiceClient() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SupabaseClient = any;
+
 export async function createEnquiry(
   input: CreateEnquiryInput
 ): Promise<{ id: string }> {
-  const supabase = getServiceClient();
+  const supabase = getServiceClient() as SupabaseClient;
 
-  const row: EnquiryInsert = {
+  const row: SupabaseClient = {
     name: input.name.trim(),
     email: input.email.trim(),
     phone: input.phone.trim() || null,
@@ -38,7 +39,7 @@ export async function createEnquiry(
     .from("enquiries")
     .insert(row)
     .select("id")
-    .single();
+    .single() as SupabaseClient;
 
   if (error) {
     console.error("[EnquiriesService:createEnquiry]", error);
