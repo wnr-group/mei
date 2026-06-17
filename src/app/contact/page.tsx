@@ -20,6 +20,15 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const [measurements, setMeasurements] = useState({
+    bust: "", waist: "", hip: "", shoulder: "", length: "", sleeve: "",
+  });
+
+  const handleMeasurementChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const field = e.target.id as keyof typeof measurements;
+    setMeasurements(prev => ({ ...prev, [field]: e.target.value }));
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
@@ -59,11 +68,31 @@ export default function ContactPage() {
     setIsSubmitting(true);
     setSubmitError(null);
 
-    const result = await submitEnquiry(formData);
+    const hasMeasurements = Object.values(measurements).some(v => v.trim());
+    const measurementsToSubmit = hasMeasurements
+      ? {
+          bust: measurements.bust.trim() || null,
+          waist: measurements.waist.trim() || null,
+          hip: measurements.hip.trim() || null,
+          shoulder: measurements.shoulder.trim() || null,
+          length: measurements.length.trim() || null,
+          sleeve: measurements.sleeve.trim() || null,
+        }
+      : null;
+
+    // TODO(MEI-Storage): Upload imageFiles to Supabase Storage and pass returned URLs as referenceImages
+    const result = await submitEnquiry({
+      ...formData,
+      measurements: measurementsToSubmit,
+      referenceImages: null,
+    });
 
     setIsSubmitting(false);
 
     if (result.success) {
+      setFormData({ name: "", email: "", phone: "", occasion: "", budget: "", message: "" });
+      setMeasurements({ bust: "", waist: "", hip: "", shoulder: "", length: "", sleeve: "" });
+      setSubmitError(null);
       setSubmitted(true);
     } else {
       setSubmitError(result.error);
@@ -251,6 +280,41 @@ export default function ContactPage() {
               onChange={handleChange}
               className="w-full border border-[#e8e0d5] bg-white px-4 py-3 text-sm font-inter text-[#1a1a1a] placeholder:text-[#9a9a9a]/40 focus:outline-none focus:border-[#c9a465] rounded-none outline-none transition-colors duration-300 resize-none"
             />
+          </div>
+
+          {/* Measurements Section */}
+          <div className="space-y-4 border-t border-[#e8e0d5] pt-6">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
+                Measurements{" "}
+                <span className="font-normal normal-case tracking-normal text-[#9a9a9a]/60">
+                  (Optional — all in inches)
+                </span>
+              </p>
+              <p className="text-xs text-[#9a9a9a]/60 mt-1">
+                Providing measurements helps us quote accurately and speeds up the fitting process.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {(["bust", "waist", "hip", "shoulder", "length", "sleeve"] as const).map((field) => (
+                <div key={field} className="space-y-1.5">
+                  <label
+                    htmlFor={field}
+                    className="block text-xs font-semibold uppercase tracking-[0.12em] text-[#9a9a9a]"
+                  >
+                    {field.charAt(0).toUpperCase() + field.slice(1)}
+                  </label>
+                  <input
+                    type="text"
+                    id={field}
+                    placeholder='e.g. 34"'
+                    value={measurements[field]}
+                    onChange={handleMeasurementChange}
+                    className="w-full border border-[#e8e0d5] bg-white px-4 py-3 text-sm font-inter text-[#1a1a1a] placeholder:text-[#9a9a9a]/40 focus:outline-none focus:border-[#c9a465] rounded-none outline-none transition-colors duration-300"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
           {submitError && (
