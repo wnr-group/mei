@@ -1,22 +1,27 @@
 import type { NextConfig } from "next";
 
 let supabaseHostname = "hjhqemsyufsifmgespur.supabase.co";
+let supabaseProtocol: "http" | "https" = "https";
+let supabasePort = "";
+
 if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
   try {
-    supabaseHostname = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname;
+    const parsed = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL);
+    supabaseHostname = parsed.hostname;
+    supabaseProtocol = parsed.protocol === "http:" ? "http" : "https";
+    supabasePort = parsed.port;
   } catch {
-    // Ignore error
+    // Ignore malformed URL
   }
 }
 
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
     remotePatterns: [
       {
-        protocol: "https",
+        protocol: supabaseProtocol,
         hostname: supabaseHostname,
-        port: "",
+        port: supabasePort,
         pathname: "/storage/v1/object/public/**",
       },
     ],
