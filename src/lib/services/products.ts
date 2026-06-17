@@ -138,8 +138,6 @@ const _cachedGetProductById = unstable_cache(
 
 const _cachedGetProductBySlug = unstable_cache(
   async (slug: string): Promise<Product | null> => {
-    console.log("[TRACE] _cachedGetProductBySlug - input slug:", JSON.stringify({ slug }));
-    console.log("[QUERY SLUG]", slug);
     const supabase = getServiceClient();
     const { data, error } = await supabase
       .from("products")
@@ -148,11 +146,6 @@ const _cachedGetProductBySlug = unstable_cache(
       .eq("status", "PUBLISHED")
       .is("deleted_at", null)
       .maybeSingle() as { data: ProductWithRelations | null; error: any };
-
-    console.log("[TRACE] _cachedGetProductBySlug - Supabase response:", JSON.stringify({
-      data: data ? { id: data.id, name: data.name, slug: data.slug, status: data.status } : null,
-      error: error ? { message: error.message, code: error.code } : null
-    }));
 
     if (error) {
       console.error("[ProductsService:getProductBySlug]", error);
@@ -215,7 +208,6 @@ export async function getProductById(id: string): Promise<Product | null> {
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  console.log("[TRACE] getProductBySlug - received slug:", JSON.stringify({ slug, slugLength: slug.length, slugChars: slug.split('').map(c => `${c}(${c.charCodeAt(0)})`) }));
   return _cachedGetProductBySlug(slug);
 }
 

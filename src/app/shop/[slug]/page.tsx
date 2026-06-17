@@ -22,11 +22,7 @@ function formatPrice(price: number): string {
 export default async function ProductDetailPage({ params }: Props) {
   const { slug } = await params;
   const normalizedSlug = decodeURIComponent(slug);
-  console.log("[RAW PARAM]", slug);
-  console.log("[DECODED PARAM]", decodeURIComponent(slug));
-  console.log("[TRACE] ProductDetailPage - params.slug:", JSON.stringify({ slug }));
   const product = await getProductBySlug(normalizedSlug);
-  console.log("[TRACE] ProductDetailPage - getProductBySlug result:", JSON.stringify({ product: product ? { id: product.id, name: product.name, slug: product.slug } : null }));
 
   if (product) {
     // Targeted query: only fetch 3 products in the same category
@@ -125,9 +121,7 @@ export default async function ProductDetailPage({ params }: Props) {
   }
 
   // If not a product, try category
-  console.log("[TRACE] ProductDetailPage - product is null, trying getCategoryBySlug with slug:", JSON.stringify({ slug }));
   const category = await getCategoryBySlug(normalizedSlug);
-  console.log("[TRACE] ProductDetailPage - getCategoryBySlug result:", JSON.stringify({ category: category ? { id: category.id, name: category.name, slug: category.slug } : null }));
 
   if (category) {
     const products = await getProductsByCategory(normalizedSlug);
@@ -166,6 +160,5 @@ export default async function ProductDetailPage({ params }: Props) {
   }
 
   // Neither product nor category found
-  console.log("[TRACE] ProductDetailPage - CALLING notFound() for slug:", JSON.stringify({ slug }));
   notFound();
 }
