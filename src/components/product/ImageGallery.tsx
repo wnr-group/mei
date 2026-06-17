@@ -11,7 +11,15 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const validImages = (images || []).filter(Boolean);
-  if (validImages.length === 0) return null;
+  if (validImages.length === 0) {
+    return (
+      <div className="relative aspect-[3/4] w-full bg-[#faf8f5] border border-[#e8e0d5]/40 flex items-center justify-center">
+        <span className="text-[#9a9a9a] text-xs uppercase tracking-wider font-semibold select-none font-inter">
+          No Image Available
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
