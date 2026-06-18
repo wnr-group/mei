@@ -31,9 +31,8 @@ function FormField({ id, label, placeholder, value, error, onChange, type = "tex
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className={`w-full bg-transparent border-b pb-2 pt-1 text-sm font-inter text-[#1a1a1a] placeholder:text-[#9a9a9a]/40 focus:outline-none focus:border-[#c9a465] transition-all duration-300 rounded-none outline-none ${
-          error ? "border-red-500 focus:border-red-500" : "border-[#e8e0d5]"
-        }`}
+        className={`w-full bg-transparent border-b pb-2 pt-1 text-sm font-inter text-[#1a1a1a] placeholder:text-[#9a9a9a]/40 focus:outline-none focus:border-[#c9a465] transition-all duration-300 rounded-none outline-none ${error ? "border-red-500 focus:border-red-500" : "border-[#e8e0d5]"
+          }`}
       />
       {error && <p className="text-xs text-red-500 font-inter mt-0.5">{error}</p>}
     </div>
@@ -63,7 +62,6 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
