@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { submitEnquiry } from "./actions";
+import { uploadReferenceImages } from "@/lib/supabase/storage-upload";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -146,11 +147,26 @@ export default function ContactPage() {
         }
       : null;
 
-    // TODO(MEI-Storage): Upload imageFiles to Supabase Storage and pass returned URLs as referenceImages
+    const tempEnquiryId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    let referenceImageUrls: string[] | null = null;
+
+    if (imageFiles.length > 0) {
+      try {
+        referenceImageUrls = await uploadReferenceImages(imageFiles, tempEnquiryId);
+      } catch (error) {
+        setIsSubmitting(false);
+        const errorMsg = error instanceof Error
+          ? error.message
+          : "Failed to upload reference images. Please try again.";
+        setSubmitError(errorMsg);
+        return;
+      }
+    }
+
     const result = await submitEnquiry({
       ...formData,
       measurements: measurementsToSubmit,
-      referenceImages: null,
+      referenceImages: referenceImageUrls,
     });
 
     setIsSubmitting(false);
