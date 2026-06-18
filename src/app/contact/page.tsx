@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { submitEnquiry } from "./actions";
-import { uploadReferenceImages } from "@/lib/supabase/storage-upload";
+import { uploadEnquiryImages } from "./upload-action";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -147,20 +147,21 @@ export default function ContactPage() {
         }
       : null;
 
-    const tempEnquiryId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     let referenceImageUrls: string[] | null = null;
 
     if (imageFiles.length > 0) {
-      try {
-        referenceImageUrls = await uploadReferenceImages(imageFiles, tempEnquiryId);
-      } catch (error) {
+      const uploadData = new FormData();
+      const enquiryId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      uploadData.append("enquiryId", enquiryId);
+      imageFiles.forEach((f) => uploadData.append("images", f));
+
+      const uploadResult = await uploadEnquiryImages(uploadData);
+      if (!uploadResult.success) {
         setIsSubmitting(false);
-        const errorMsg = error instanceof Error
-          ? error.message
-          : "Failed to upload reference images. Please try again.";
-        setSubmitError(errorMsg);
+        setSubmitError(uploadResult.error);
         return;
       }
+      referenceImageUrls = uploadResult.urls;
     }
 
     const result = await submitEnquiry({

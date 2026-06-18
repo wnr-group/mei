@@ -1,4 +1,4 @@
-import { createClient } from "./client";
+import { createServiceClient } from "./service-client";
 
 /**
  * Uploads reference images to Supabase Storage (enquiry-images bucket)
@@ -20,7 +20,7 @@ export async function uploadReferenceImages(files: File[], enquiryId: string): P
   }
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-  const supabase = createClient();
+  const supabase = createServiceClient();
   const uploadedUrls: string[] = [];
   const uploadedFilePaths: string[] = [];
   const uploadPromises: Promise<string>[] = [];
