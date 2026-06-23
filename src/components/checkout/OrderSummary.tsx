@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/cart";
+import { calculateShipping } from "@/lib/config/shipping";
+import { formatCurrency } from "@/lib/utils/format";
 
 export default function OrderSummary() {
   const items = useCartStore((state) => state.items);
@@ -14,18 +16,12 @@ export default function OrderSummary() {
     setMounted(true);
   }, []);
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
-
   if (!mounted) return null;
 
-  const estimatedTax = total() * 0.12; // 12% GST standard for luxury apparel in India
-  const grandTotal = total() + estimatedTax;
+  const subtotalVal = total();
+  const shipping = calculateShipping(subtotalVal);
+  const estimatedTax = subtotalVal * 0.12; // 12% GST standard for luxury apparel in India
+  const grandTotal = subtotalVal + shipping + estimatedTax;
 
   return (
     <div className="bg-[#faf8f5] border border-[#e8e0d5] p-6 space-y-6 font-inter">
@@ -55,7 +51,7 @@ export default function OrderSummary() {
                 </div>
               </div>
               <span className="font-semibold text-[#1a1a1a]">
-                {formatPrice(item.price * item.quantity)}
+                {formatCurrency(item.price * item.quantity)}
               </span>
             </div>
           ))}
@@ -67,17 +63,19 @@ export default function OrderSummary() {
       <div className="space-y-2 text-xs">
         <div className="flex justify-between text-[#4a4a4a]">
           <span>Subtotal</span>
-          <span>{formatPrice(total())}</span>
+          <span>{formatCurrency(subtotalVal)}</span>
         </div>
         <div className="flex justify-between text-[#4a4a4a]">
           <span>Estimated GST (12%)</span>
-          <span>{formatPrice(estimatedTax)}</span>
+          <span>{formatCurrency(estimatedTax)}</span>
         </div>
         <div className="flex justify-between text-[#4a4a4a]">
           <span>Shipping</span>
-          <span className="text-[#c9a465] font-medium uppercase tracking-wider">
-            Complimentary
-          </span>
+          {shipping === 0 ? (
+            <span className="text-[#c9a465] font-medium uppercase tracking-wider">Free</span>
+          ) : (
+            <span className="font-medium text-[#1a1a1a]">{formatCurrency(shipping)}</span>
+          )}
         </div>
       </div>
 
@@ -88,7 +86,7 @@ export default function OrderSummary() {
           Total
         </span>
         <span className="text-lg font-light text-[#1a1a1a]">
-          {formatPrice(grandTotal)}
+          {formatCurrency(grandTotal)}
         </span>
       </div>
     </div>
