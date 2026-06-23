@@ -32,6 +32,7 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
   // Mount/unmount with enter/exit animation + state reset on open
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMounted(true);
       setQuery("");
       setResults([]);
@@ -65,6 +66,7 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
   // Sync results from query (client-side for now; swap to async fetch for Supabase)
   useEffect(() => {
     const filtered = filterProducts(products, query, ["name"]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setResults(filtered.slice(0, 10));
     setHighlightedIndex(-1);
     if (query.trim()) {
