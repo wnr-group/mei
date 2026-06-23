@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MOCK_PRODUCTS } from "@/lib/data/mockProducts";
 import { useCartStore } from "@/store/cart";
+import { buildWhatsAppUrl } from "@/lib/config/whatsapp";
 import ImageGallery from "@/components/product/ImageGallery";
 import ProductCard from "@/components/shop/ProductCard";
 
@@ -115,7 +116,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
               </button>
               
               <a
-                href={`https://wa.me/919876543210?text=Hi,%20I'm%20interested%20in%20inquiring%20about%20${encodeURIComponent(product.name)}.`}
+                href={buildWhatsAppUrl(`Hi, I'm interested in inquiring about ${product.name}.`)}
                 target="_blank"
                 rel="noreferrer"
                 className="w-full border border-[#25d366] text-[#25d366] hover:bg-[#25d366]/5 py-4 text-sm font-semibold uppercase tracking-widest transition-colors duration-300 cursor-pointer flex items-center justify-center gap-2"
