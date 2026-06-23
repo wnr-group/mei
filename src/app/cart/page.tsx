@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/cart";
+import { calculateShipping } from "@/lib/config/shipping";
+import { formatCurrency } from "@/lib/utils/format";
 
 export default function CartPage() {
   const items = useCartStore((state) => state.items);
@@ -17,13 +19,9 @@ export default function CartPage() {
     setMounted(true);
   }, []);
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
+  const subtotal = total();
+  const shipping = calculateShipping(subtotal);
+  const grandTotal = subtotal + shipping;
 
   if (!mounted) {
     return (
@@ -107,7 +105,7 @@ export default function CartPage() {
                         {item.name}
                       </h3>
                       <p className="text-sm font-light text-[#1a1a1a]">
-                        {formatPrice(item.price)}
+                        {formatCurrency(item.price)}
                       </p>
                     </div>
                   </div>
@@ -155,14 +153,20 @@ export default function CartPage() {
                 <div className="flex justify-between text-[#4a4a4a]">
                   <span>Subtotal</span>
                   <span className="font-semibold text-[#1a1a1a]">
-                    {formatPrice(total())}
+                    {formatCurrency(subtotal)}
                   </span>
                 </div>
                 <div className="flex justify-between text-[#4a4a4a]">
                   <span>Shipping</span>
-                  <span className="text-[#c9a465] font-semibold uppercase tracking-wider">
-                    Complimentary
-                  </span>
+                  {shipping === 0 ? (
+                    <span className="text-[#c9a465] font-semibold uppercase tracking-wider">
+                      Free
+                    </span>
+                  ) : (
+                    <span className="font-semibold text-[#1a1a1a]">
+                      {formatCurrency(shipping)}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -173,7 +177,7 @@ export default function CartPage() {
                   Total
                 </span>
                 <span className="text-xl font-inter font-bold text-[#c9a465]">
-                  {formatPrice(total())}
+                  {formatCurrency(grandTotal)}
                 </span>
               </div>
 
