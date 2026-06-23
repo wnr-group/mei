@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import PromoStrip from "@/components/layout/PromoStrip";
+import WhatsAppButton from "@/components/layout/WhatsAppButton";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -35,6 +36,7 @@ export default function RootLayout({
         <Header />
         <div className="flex-1 flex flex-col">{children}</div>
         <Footer />
+        <WhatsAppButton />
       </body>
     </html>
   );
