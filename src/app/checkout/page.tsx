@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCartStore } from "@/store/cart";
+import { calculateShipping } from "@/lib/config/shipping";
+import { formatCurrency } from "@/lib/utils/format";
 
 interface FormFieldProps {
   id: string;
@@ -112,14 +114,6 @@ export default function CheckoutPage() {
     }, 1800);
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
-
   if (!mounted) {
     return (
       <main className="flex-1 bg-white min-h-[60vh] flex items-center justify-center font-inter">
@@ -173,6 +167,8 @@ export default function CheckoutPage() {
   }
 
   const subtotalVal = total();
+  const shipping = calculateShipping(subtotalVal);
+  const grandTotal = subtotalVal + shipping;
 
   return (
     <main className="flex-1 bg-white py-16">
@@ -324,7 +320,7 @@ export default function CheckoutPage() {
                         QTY: {item.quantity}
                       </p>
                       <p className="text-xs font-semibold text-[#1a1a1a] pt-1">
-                        {formatPrice(item.price)}
+                        {formatCurrency(item.price)}
                       </p>
                     </div>
                   </div>
@@ -338,11 +334,15 @@ export default function CheckoutPage() {
             <div className="space-y-3 text-xs tracking-wide">
               <div className="flex justify-between text-[#4a4a4a] font-medium">
                 <span className="uppercase text-xs tracking-widest font-bold">Subtotal</span>
-                <span>{formatPrice(subtotalVal)}</span>
+                <span>{formatCurrency(subtotalVal)}</span>
               </div>
               <div className="flex justify-between text-[#4a4a4a] font-medium">
                 <span className="uppercase text-xs tracking-widest font-bold">Shipping</span>
-                <span className="text-[#c9a465] uppercase font-bold text-xs tracking-widest">Free</span>
+                {shipping === 0 ? (
+                  <span className="text-[#c9a465] uppercase font-bold text-xs tracking-widest">Free</span>
+                ) : (
+                  <span className="font-bold text-xs text-[#1a1a1a]">{formatCurrency(shipping)}</span>
+                )}
               </div>
             </div>
 
@@ -354,7 +354,7 @@ export default function CheckoutPage() {
                 Total
               </span>
               <span className="text-lg font-light text-[#1a1a1a]">
-                {formatPrice(subtotalVal)}
+                {formatCurrency(grandTotal)}
               </span>
             </div>
 
@@ -390,7 +390,7 @@ export default function CheckoutPage() {
                     Processing...
                   </>
                 ) : (
-                  `Pay Now — ${formatPrice(subtotalVal)}`
+                  `Pay Now — ${formatCurrency(grandTotal)}`
                 )}
               </button>
               <p className="text-center text-xs uppercase tracking-widest text-[#9a9a9a] font-bold select-none">
