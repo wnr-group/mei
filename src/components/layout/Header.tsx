@@ -5,7 +5,16 @@ import { usePathname } from "next/navigation";
 import { useCartStore } from "@/store/cart";
 import { useEffect, useState } from "react";
 
-export default function Header() {
+export interface HeaderNavCategory {
+  slug: string;
+  name: string;
+}
+
+interface HeaderProps {
+  categories?: HeaderNavCategory[];
+}
+
+export default function Header({ categories = [] }: HeaderProps) {
   const pathname = usePathname();
   const itemCount = useCartStore((state) => state.itemCount);
   const [mounted, setMounted] = useState(false);
@@ -15,10 +24,14 @@ export default function Header() {
     setMounted(true);
   }, []);
 
+  // Nav is driven by live categories (MEI-17/18/21), with New Arrivals,
+  // The Atelier, and Contact kept as fixed entries around them.
   const navLinks = [
-    { href: "/", label: "Collections" },
     { href: "/new-arrivals", label: "New Arrivals" },
-    { href: "/shop", label: "Lehengas" },
+    ...categories.map((category) => ({
+      href: `/shop/${category.slug}`,
+      label: category.name,
+    })),
     { href: "/atelier", label: "The Atelier" },
     { href: "/contact", label: "Contact" },
   ];
