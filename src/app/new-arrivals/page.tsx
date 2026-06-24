@@ -1,11 +1,9 @@
-"use client";
-
-import { MOCK_PRODUCTS } from "@/lib/data/mockProducts";
+import { getProducts } from "@/lib/services/products";
 import ProductCard from "@/components/shop/ProductCard";
 import Link from "next/link";
 
-export default function NewArrivalsPage() {
-  const newArrivals = MOCK_PRODUCTS.slice(0, 4);
+export default async function NewArrivalsPage() {
+  const newArrivals = await getProducts({ limit: 4 });
 
   return (
     <main className="flex-1 bg-white min-h-screen">

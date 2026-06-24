@@ -7,22 +7,36 @@ interface ImageGalleryProps {
   images: string[];
 }
 
+const isSupabaseUrl = (url?: string | null) => {
+  return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
+};
+
 export default function ImageGallery({ images }: ImageGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  if (!images || images.length === 0) return null;
+  const validImages = (images || []).filter(Boolean);
+  if (validImages.length === 0) {
+    return (
+      <div className="relative aspect-[3/4] w-full bg-[#faf8f5] border border-[#e8e0d5]/40 flex items-center justify-center">
+        <span className="text-[#9a9a9a] text-xs uppercase tracking-wider font-semibold select-none font-inter">
+          No Image Available
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Main Image View */}
       <div className="relative aspect-[3/4] w-full bg-[#faf8f5] border border-[#e8e0d5]/40">
         <Image
-          src={images[activeIndex]}
+          src={validImages[activeIndex]}
           alt="Featured bridal lehenga main view"
           fill
           priority
           sizes="(max-w-7xl) 50vw, 100vw"
           className="object-cover"
+          unoptimized={isSupabaseUrl(validImages[activeIndex])}
         />
       </div>
 
@@ -37,11 +51,12 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
         >
           <div className="relative w-10 h-14 flex-shrink-0 bg-[#faf8f5]">
             <Image
-              src={images[0]}
+              src={validImages[0]}
               alt="Front view preview"
               fill
               sizes="40px"
               className="object-cover"
+              unoptimized={isSupabaseUrl(validImages[0])}
             />
           </div>
           <span className="hidden sm:inline-block text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-[#4a4a4a] text-left leading-tight">
@@ -50,7 +65,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
         </button>
 
         {/* Thumbnail 2: Embroidery detail */}
-        {images[1] ? (
+        {validImages[1] ? (
           <button
             onClick={() => setActiveIndex(1)}
             className={`flex items-center justify-center sm:justify-start space-x-0 sm:space-x-2 p-1.5 sm:p-2 border bg-white cursor-pointer h-20 transition-all duration-300 ${
@@ -59,11 +74,12 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
           >
             <div className="relative w-10 h-14 flex-shrink-0 bg-[#faf8f5]">
               <Image
-                src={images[1]}
+                src={validImages[1]}
                 alt="Embroidery detail preview"
                 fill
                 sizes="40px"
                 className="object-cover"
+                unoptimized={isSupabaseUrl(validImages[1])}
               />
             </div>
             <span className="hidden sm:inline-block text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-[#4a4a4a] text-left leading-tight">

@@ -809,6 +809,7 @@
 
 ### Task 9: Validate live Supabase schema matches types
 
+
 **Files:** (read-only verification)
 
 > **Context:** Confirm the manually-updated `database.ts` matches the actual live schema. Required before the ticket can be closed. Supabase CLI must be linked to project `hjhqemsyufsifmgespur`.
