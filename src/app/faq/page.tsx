@@ -2,7 +2,7 @@ import React from 'react'
 
 const faq = () => {
   return (
-    <div>FAQ's</div>
+    <div>FAQ&apos;s</div>
   )
 }
 
