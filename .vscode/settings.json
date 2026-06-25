@@ -1,0 +1,21 @@
+{
+  // ESLint extension: auto-detect working directory so each git worktree
+  // (under .claude/worktrees/) uses its own eslint.config.mjs rather than
+  // the workspace-root config. Without this, the extension runs from the
+  // workspace root and the .next/** ignore patterns don't match worktree paths.
+  "eslint.workingDirectories": [
+    { "mode": "auto" }
+  ],
+  // Validate these language IDs with ESLint
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  // Suppress the "File ignored" warning that appears when VS Code opens
+  // a file that is covered by an eslint ignores pattern
+  "eslint.options": {
+    "warnIgnored": false
+  }
+}

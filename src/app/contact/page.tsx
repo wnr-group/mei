@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { submitEnquiry } from "./actions";
+import { uploadEnquiryImages } from "./upload-action";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -17,6 +19,81 @@ export default function ContactPage() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const [measurements, setMeasurements] = useState({
+    bust: "", waist: "", hip: "", shoulder: "", length: "", sleeve: "",
+  });
+
+  const handleMeasurementChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const field = e.target.id as keyof typeof measurements;
+    setMeasurements(prev => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const MAX_IMAGES = 5;
+  const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const previewUrlsRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    previewUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+    const newUrls = imageFiles.map(f => URL.createObjectURL(f));
+    previewUrlsRef.current = newUrls;
+    setImagePreviews(newUrls);
+    return () => {
+      newUrls.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [imageFiles]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const incoming = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    setImageError(null);
+
+    if (incoming.length === 0) return;
+
+    const invalidType = incoming.find(f => !ALLOWED_TYPES.includes(f.type));
+    if (invalidType) {
+      setImageError(`"${invalidType.name}" is not allowed. Use JPEG, PNG, or WebP.`);
+      return;
+    }
+
+    const tooLarge = incoming.find(f => f.size > MAX_SIZE_BYTES);
+    if (tooLarge) {
+      setImageError(`"${tooLarge.name}" exceeds the 5 MB limit.`);
+      return;
+    }
+
+    const unique = incoming.filter(
+      f => !imageFiles.some(
+        p => p.name === f.name && p.size === f.size && p.lastModified === f.lastModified
+      )
+    );
+
+    if (unique.length < incoming.length) {
+      setImageError("One or more images were already added and were skipped.");
+    }
+
+    if (unique.length === 0) return;
+
+    const combined = [...imageFiles, ...unique];
+    if (combined.length > MAX_IMAGES) {
+      setImageError(`You can add a maximum of ${MAX_IMAGES} images.`);
+      return;
+    }
+
+    setImageFiles(combined);
+  };
+
+  const removeImage = (index: number) => {
+    setImageError(null);
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
@@ -49,17 +126,61 @@ export default function ContactPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    if (isSubmitting) return;
     if (!validate()) return;
 
     setIsSubmitting(true);
+    setSubmitError(null);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    const hasMeasurements = Object.values(measurements).some(v => v.trim());
+    const measurementsToSubmit = hasMeasurements
+      ? {
+          bust: measurements.bust.trim() || null,
+          waist: measurements.waist.trim() || null,
+          hip: measurements.hip.trim() || null,
+          shoulder: measurements.shoulder.trim() || null,
+          length: measurements.length.trim() || null,
+          sleeve: measurements.sleeve.trim() || null,
+        }
+      : null;
+
+    let referenceImageUrls: string[] | null = null;
+
+    if (imageFiles.length > 0) {
+      const uploadData = new FormData();
+      const enquiryId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      uploadData.append("enquiryId", enquiryId);
+      imageFiles.forEach((f) => uploadData.append("images", f));
+
+      const uploadResult = await uploadEnquiryImages(uploadData);
+      if (!uploadResult.success) {
+        setIsSubmitting(false);
+        setSubmitError(uploadResult.error);
+        return;
+      }
+      referenceImageUrls = uploadResult.urls;
+    }
+
+    const result = await submitEnquiry({
+      ...formData,
+      measurements: measurementsToSubmit,
+      referenceImages: referenceImageUrls,
+    });
+
+    setIsSubmitting(false);
+
+    if (result.success) {
+      setFormData({ name: "", email: "", phone: "", occasion: "", budget: "", message: "" });
+      setMeasurements({ bust: "", waist: "", hip: "", shoulder: "", length: "", sleeve: "" });
+      setImageFiles([]);
+      setImageError(null);
+      setSubmitError(null);
       setSubmitted(true);
-    }, 1500);
+    } else {
+      setSubmitError(result.error);
+    }
   };
 
   if (submitted) {
@@ -244,6 +365,142 @@ export default function ContactPage() {
               className="w-full border border-[#e8e0d5] bg-white px-4 py-3 text-sm font-inter text-[#1a1a1a] placeholder:text-[#9a9a9a]/40 focus:outline-none focus:border-[#c9a465] rounded-none outline-none transition-colors duration-300 resize-none"
             />
           </div>
+
+          {/* Measurements Section */}
+          <div className="space-y-4 border-t border-[#e8e0d5] pt-6">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
+                Measurements{" "}
+                <span className="font-normal normal-case tracking-normal text-[#9a9a9a]/60">
+                  (Optional — all in inches)
+                </span>
+              </p>
+              <p className="text-xs text-[#9a9a9a]/60 mt-1">
+                Providing measurements helps us quote accurately and speeds up the fitting process.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {(["bust", "waist", "hip", "shoulder", "length", "sleeve"] as const).map((field) => (
+                <div key={field} className="space-y-1.5">
+                  <label
+                    htmlFor={field}
+                    className="block text-xs font-semibold uppercase tracking-[0.12em] text-[#9a9a9a]"
+                  >
+                    {field.charAt(0).toUpperCase() + field.slice(1)}
+                  </label>
+                  <input
+                    type="text"
+                    id={field}
+                    placeholder='e.g. 34"'
+                    value={measurements[field]}
+                    onChange={handleMeasurementChange}
+                    className="w-full border border-[#e8e0d5] bg-white px-4 py-3 text-sm font-inter text-[#1a1a1a] placeholder:text-[#9a9a9a]/40 focus:outline-none focus:border-[#c9a465] rounded-none outline-none transition-colors duration-300"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Reference Images */}
+          <div className="space-y-4 border-t border-[#e8e0d5] pt-6">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
+                Reference Images{" "}
+                <span className="font-normal normal-case tracking-normal text-[#9a9a9a]/60">
+                  (Optional — up to 5)
+                </span>
+              </p>
+              <p className="text-xs text-[#9a9a9a]/60 mt-1">
+                JPEG, PNG, or WebP only · Maximum size: 5 MB per image
+              </p>
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              className="hidden"
+              onChange={handleImageChange}
+            />
+
+            {imageFiles.length < MAX_IMAGES ? (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2 border border-dashed border-[#c9a465] px-5 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-[#c9a465] hover:bg-[#c9a465]/5 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-4 h-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+                  />
+                </svg>
+                Select Images ({imageFiles.length}/{MAX_IMAGES})
+              </button>
+            ) : (
+              <p className="text-xs text-[#9a9a9a]/60">
+                Maximum 5 images reached. Remove an image to change your selection.
+              </p>
+            )}
+
+            {imageError && (
+              <p role="alert" className="text-xs text-red-500">{imageError}</p>
+            )}
+
+            {imagePreviews.length > 0 && (
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                {imagePreviews.map((src, i) => (
+                  <div
+                    key={i}
+                    className="relative aspect-square border border-[#e8e0d5] overflow-hidden group"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={src}
+                      alt={`Reference ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(i)}
+                      className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label={`Remove image ${i + 1}`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="white"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6 18 18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {submitError && (
+            <div role="alert" className="text-sm text-red-600 border border-red-200 bg-red-50 py-3 px-4 text-center">
+              {submitError}
+            </div>
+          )}
 
           {/* Submit */}
           <button

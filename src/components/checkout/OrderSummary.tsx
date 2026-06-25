@@ -6,6 +6,10 @@ import { useCartStore } from "@/store/cart";
 import { calculateShipping } from "@/lib/config/shipping";
 import { formatCurrency } from "@/lib/utils/format";
 
+const isSupabaseUrl = (url?: string | null) => {
+  return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
+};
+
 export default function OrderSummary() {
   const items = useCartStore((state) => state.items);
   const total = useCartStore((state) => state.total);
@@ -36,14 +40,21 @@ export default function OrderSummary() {
           {items.map((item) => (
             <div key={item.id} className="flex justify-between items-center text-xs">
               <div className="flex items-center space-x-3">
-                <div className="relative w-12 h-16 bg-white border border-[#e8e0d5]/40 flex-shrink-0">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    sizes="48px"
-                    className="object-cover"
-                  />
+                <div className="relative w-12 h-16 bg-white border border-[#e8e0d5]/40 flex-shrink-0 flex items-center justify-center">
+                  {item.image ? (
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                      unoptimized={isSupabaseUrl(item.image)}
+                    />
+                  ) : (
+                    <span className="text-[#9a9a9a] text-[8px] uppercase tracking-wider font-semibold select-none text-center px-0.5">
+                      No Image
+                    </span>
+                  )}
                 </div>
                 <div>
                   <p className="font-medium text-[#1a1a1a]">{item.name}</p>

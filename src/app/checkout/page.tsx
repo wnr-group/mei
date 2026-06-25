@@ -7,6 +7,10 @@ import { useCartStore } from "@/store/cart";
 import { calculateShipping } from "@/lib/config/shipping";
 import { formatCurrency } from "@/lib/utils/format";
 
+const isSupabaseUrl = (url?: string | null) => {
+  return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
+};
+
 interface FormFieldProps {
   id: string;
   label: string;
@@ -29,9 +33,8 @@ function FormField({ id, label, placeholder, value, error, onChange, type = "tex
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className={`w-full bg-transparent border-b pb-2 pt-1 text-sm font-inter text-[#1a1a1a] placeholder:text-[#9a9a9a]/40 focus:outline-none focus:border-[#c9a465] transition-all duration-300 rounded-none outline-none ${
-          error ? "border-red-500 focus:border-red-500" : "border-[#e8e0d5]"
-        }`}
+        className={`w-full bg-transparent border-b pb-2 pt-1 text-sm font-inter text-[#1a1a1a] placeholder:text-[#9a9a9a]/40 focus:outline-none focus:border-[#c9a465] transition-all duration-300 rounded-none outline-none ${error ? "border-red-500 focus:border-red-500" : "border-[#e8e0d5]"
+          }`}
       />
       {error && <p className="text-xs text-red-500 font-inter mt-0.5">{error}</p>}
     </div>
@@ -303,14 +306,21 @@ export default function CheckoutPage() {
               <div className="space-y-6">
                 {items.map((item) => (
                   <div key={item.id} className="flex space-x-4 items-center">
-                    <div className="relative w-16 h-20 bg-white border border-[#e8e0d5]/40 flex-shrink-0">
-                      <Image
-                        src={item.image}
-                        alt="Product Thumbnail"
-                        fill
-                        sizes="64px"
-                        className="object-cover"
-                      />
+                    <div className="relative w-16 h-20 bg-white border border-[#e8e0d5]/40 flex-shrink-0 flex items-center justify-center">
+                      {item.image ? (
+                        <Image
+                          src={item.image}
+                          alt="Product Thumbnail"
+                          fill
+                          sizes="64px"
+                          className="object-cover"
+                          unoptimized={isSupabaseUrl(item.image)}
+                        />
+                      ) : (
+                        <span className="text-[#9a9a9a] text-[8px] uppercase tracking-wider font-semibold select-none text-center px-1">
+                          No Image
+                        </span>
+                      )}
                     </div>
                     <div className="space-y-1">
                       <h3 className="text-xs font-semibold text-[#1a1a1a] leading-tight">
