@@ -9,6 +9,14 @@ import { getCategories } from "@/lib/services/categories";
 const isSupabaseUrl = (url?: string | null) => {
   return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
 };
+ const crafts = [
+  { label: "Aari Work", image: "/images/aariwork.jpg" },
+  { label: "Zardosi", image: "/images/zardosi.webp" },
+  { label: "Mirror Work", image: "/images/mirror.jpg" }, // Add your actual filenames
+  { label: "Thread Embroidery", image: "/images/thread.jpg" },
+  { label: "Cut Work", image: "/images/cut.webp" },
+  { label: "Bespoke Tailoring", image: "/images/bespoke.jpg" },
+];
 
 export default async function Home() {
   const [categories, products] = await Promise.all([
@@ -130,38 +138,49 @@ export default async function Home() {
         </div>
       </section>
 
+   
       {/* Our Craft Section */}
-      <section className="py-24 bg-white border-b border-[#e8e0d5]/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          <div className="text-center">
-            <h2 className="text-3xl font-light tracking-[0.15em] text-[#1a1a1a] font-cormorant uppercase">
-              Our Craft
-            </h2>
+     <section className="py-24 bg-white border-b border-[#e8e0d5]/40">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <div className="text-center">
+      <h2 className="text-3xl font-light tracking-[0.15em] text-[#1a1a1a] font-cormorant uppercase">
+        Our Craft
+      </h2>
+    </div>
+    
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {crafts.map((craft, idx) => (
+        <Link
+          key={idx}
+          href="/shop"
+          className="group relative aspect-square w-full flex items-end justify-center pb-8 overflow-hidden border border-[#e8e0d5]/10 bg-[#1a1a1a]"
+        >
+          {/* 1. The Actual Image Component */}
+          {craft.image && (
+            <Image
+              src={craft.image}
+              alt={craft.label}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            />
+          )}
+
+          {/* 2. Dark Overlay (Crucial so white text is readable over light images) */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent transition-opacity duration-500 group-hover:opacity-90" />
+
+          {/* 3. Text Label */}
+          <div className="text-center z-10 transition-transform duration-500 group-hover:translate-y-[-4px]">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-white/90 group-hover:text-white transition-colors duration-300">
+              {craft.label}
+            </span>
+            <div className="w-0 h-[1px] bg-white/50 mx-auto mt-2 transition-all duration-500 group-hover:w-full" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { label: "Aari Work", bg: "bg-[#3a3a3a]" },
-              { label: "Zardosi", bg: "bg-[#4a4a4a]" },
-              { label: "Mirror Work", bg: "bg-[#5a5a5a]" },
-              { label: "Thread Embroidery", bg: "bg-[#6a6a6a]" },
-              { label: "Cut Work", bg: "bg-[#7a7a7a]" },
-              { label: "Bespoke Tailoring", bg: "bg-[#2d2d2d]" },
-            ].map((craft, idx) => (
-              <Link
-                key={idx}
-                href="/shop"
-                className={`group relative aspect-square w-full flex items-end justify-center pb-8 ${craft.bg} hover:brightness-110 transition-all duration-500 hover:scale-[1.01] overflow-hidden border border-[#e8e0d5]/10`}
-              >
-                <div className="text-center z-10">
-                  <span className="text-xs font-bold uppercase tracking-[0.25em] text-white/90 group-hover:text-white transition-colors duration-300">
-                    {craft.label}
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+        </Link>
+      ))}
+    </div>
+  </div>
+</section>
 
       {/* Bespoke Banner */}
       <section className="py-20 bg-[#faf8f5] text-center border-b border-[#e8e0d5]/40">
