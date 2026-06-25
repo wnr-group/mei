@@ -45,10 +45,10 @@ export default async function Home() {
           </h1>
           <div className="flex flex-wrap gap-4 pt-4 animate-fadeIn items-center justify-center">
             <Link
-              href="/shop"
+              href="/shop/bridal-jewellery"
               className="hover:bg-[#d4b87a] text-white border border-[#c9a465] hover:border-[#d4b87a] px-8 py-3.5 text-xs font-semibold uppercase tracking-widest transition-colors duration-300"
             >
-              Shop Collection
+              Shop Bridal Jewellery
             </Link>
           </div>
         </div>

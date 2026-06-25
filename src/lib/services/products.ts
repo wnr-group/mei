@@ -94,103 +94,13 @@ const _cachedGetAllProducts = unstable_cache(
   { tags: ["products"], revalidate: 60 }
 );
 
-const _cachedGetProductsByCategory = unstable_cache(
-  async (categorySlug: string): Promise<Product[]> => {
-    const supabase = getServiceClient();
-    const { data, error } = await supabase
-      .from("products")
-      .select(SELECT_INNER_CAT)
-      .eq("categories.slug", categorySlug)
-      .eq("status", "PUBLISHED")
-      .is("deleted_at", null)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("[ProductsService:getProductsByCategory]", error);
-      throw error;
-    }
-    return (data as ProductWithRelations[]).map(_mapDbRowToProduct);
-  },
-  ["products-by-category"],
-  { tags: ["products"] }
-);
-
-const _cachedGetProductById = unstable_cache(
-  async (id: string): Promise<Product | null> => {
-    const supabase = getServiceClient();
-    const { data, error } = await supabase
-      .from("products")
-      .select(SELECT)
-      .eq("id", id)
-      .eq("status", "PUBLISHED")
-      .is("deleted_at", null)
-      .maybeSingle();
-
-    if (error) {
-      console.error("[ProductsService:getProductById]", error);
-      throw error;
-    }
-    return data ? _mapDbRowToProduct(data as ProductWithRelations) : null;
-  },
-  ["product-by-id"],
-  { tags: ["products"] }
-);
-
-const _cachedGetProductBySlug = unstable_cache(
-  async (slug: string): Promise<Product | null> => {
-    const supabase = getServiceClient();
-    const { data, error } = await supabase
-      .from("products")
-      .select(SELECT)
-      .eq("slug", slug)
-      .eq("status", "PUBLISHED")
-      .is("deleted_at", null)
-      .maybeSingle() as { data: ProductWithRelations | null; error: { message: string } | null };
-
-    if (error) {
-      console.error("[ProductsService:getProductBySlug]", error);
-      throw error;
-    }
-    return data ? _mapDbRowToProduct(data as ProductWithRelations) : null;
-  },
-  ["product-by-slug"],
-  { tags: ["products"] }
-);
-
-const _cachedGetRelatedProducts = unstable_cache(
-  async (
-    categoryId: string,
-    excludeId: string,
-    limit: number
-  ): Promise<Product[]> => {
-    const supabase = getServiceClient();
-    const { data, error } = await supabase
-      .from("products")
-      .select(SELECT)
-      .eq("category_id", categoryId)
-      .neq("id", excludeId)
-      .eq("status", "PUBLISHED")
-      .is("deleted_at", null)
-      .order("created_at", { ascending: false })
-      .limit(limit);
-
-    if (error) {
-      console.error("[ProductsService:getRelatedProducts]", error);
-      throw error;
-    }
-    return (data as ProductWithRelations[]).map(_mapDbRowToProduct);
-  },
-  ["related-products"],
-  { tags: ["products"] }
-);
-
 // ── Public service functions ───────────────────────────────────────────────
 
 export async function getProducts(
   options: GetProductsOptions = {}
 ): Promise<Product[]> {
   if (options.categorySlug) {
-    const products = await _cachedGetProductsByCategory(options.categorySlug);
+    const products = await getProductsByCategory(options.categorySlug);
     return options.limit ? products.slice(0, options.limit) : products;
   }
   const products = await _cachedGetAllProducts();
@@ -200,15 +110,72 @@ export async function getProducts(
 export async function getProductsByCategory(
   categorySlug: string
 ): Promise<Product[]> {
-  return _cachedGetProductsByCategory(categorySlug);
+  return unstable_cache(
+    async (): Promise<Product[]> => {
+      const supabase = getServiceClient();
+      const { data, error } = await supabase
+        .from("products")
+        .select(SELECT_INNER_CAT)
+        .eq("categories.slug", categorySlug)
+        .eq("status", "PUBLISHED")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("[ProductsService:getProductsByCategory]", error);
+        throw error;
+      }
+      return (data as ProductWithRelations[]).map(_mapDbRowToProduct);
+    },
+    ["products-by-category", categorySlug],
+    { tags: ["products"], revalidate: 60 }
+  )();
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  return _cachedGetProductById(id);
+  return unstable_cache(
+    async (): Promise<Product | null> => {
+      const supabase = getServiceClient();
+      const { data, error } = await supabase
+        .from("products")
+        .select(SELECT)
+        .eq("id", id)
+        .eq("status", "PUBLISHED")
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      if (error) {
+        console.error("[ProductsService:getProductById]", error);
+        throw error;
+      }
+      return data ? _mapDbRowToProduct(data as ProductWithRelations) : null;
+    },
+    ["product-by-id", id],
+    { tags: ["products"], revalidate: 60 }
+  )();
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  return _cachedGetProductBySlug(slug);
+  return unstable_cache(
+    async (): Promise<Product | null> => {
+      const supabase = getServiceClient();
+      const { data, error } = await supabase
+        .from("products")
+        .select(SELECT)
+        .eq("slug", slug)
+        .eq("status", "PUBLISHED")
+        .is("deleted_at", null)
+        .maybeSingle() as { data: ProductWithRelations | null; error: { message: string } | null };
+
+      if (error) {
+        console.error("[ProductsService:getProductBySlug]", error);
+        throw error;
+      }
+      return data ? _mapDbRowToProduct(data as ProductWithRelations) : null;
+    },
+    ["product-by-slug", slug],
+    { tags: ["products"], revalidate: 60 }
+  )();
 }
 
 export async function getRelatedProducts(
@@ -217,5 +184,26 @@ export async function getRelatedProducts(
   limit = 3
 ): Promise<Product[]> {
   if (!categoryId) return [];
-  return _cachedGetRelatedProducts(categoryId, excludeId, limit);
+  return unstable_cache(
+    async (): Promise<Product[]> => {
+      const supabase = getServiceClient();
+      const { data, error } = await supabase
+        .from("products")
+        .select(SELECT)
+        .eq("category_id", categoryId)
+        .neq("id", excludeId)
+        .eq("status", "PUBLISHED")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        console.error("[ProductsService:getRelatedProducts]", error);
+        throw error;
+      }
+      return (data as ProductWithRelations[]).map(_mapDbRowToProduct);
+    },
+    ["related-products", categoryId, excludeId, String(limit)],
+    { tags: ["products"], revalidate: 60 }
+  )();
 }
