@@ -229,8 +229,8 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
             <ul>
               {results.map((product, index) => {
                 const imageSrc =
-                  product.image_url ||
                   product.images?.[0] ||
+                  product.image_url ||
                   "/images/placeholder.jpg";
                 return (
                   <li key={product.id}>

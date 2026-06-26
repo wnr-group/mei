@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import PromoStrip from "@/components/layout/PromoStrip";
 import WhatsAppButton from "@/components/layout/WhatsAppButton";
+import { getProducts } from "@/lib/services/products";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -24,16 +25,18 @@ export const metadata: Metadata = {
     "Premium Indian bridal wear — Lehengas, Sarees, and Bespoke Couture. Handcrafted with Aari, Zardosi, and Mirror embroidery.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const products = await getProducts();
+
   return (
     <html lang="en" className={`${cormorant.variable} ${inter.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-white text-[#1A1A1A] antialiased">
         <PromoStrip />
-        <Header />
+        <Header products={products} />
         <div className="flex-1 flex flex-col">{children}</div>
         <Footer />
         <WhatsAppButton />

@@ -16,7 +16,15 @@ if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
 }
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: supabaseProtocol,
+        hostname: supabaseHostname,
+        port: supabasePort || undefined,
+      },
+    ],
+  },
 };
 
 export default nextConfig;

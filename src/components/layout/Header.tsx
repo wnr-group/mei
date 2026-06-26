@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCartStore } from "@/store/cart";
 import { useEffect, useRef, useState } from "react";
-import { MOCK_PRODUCTS } from "@/lib/data/mockProducts";
 import SearchModal from "@/components/search/SearchModal";
+import type { Product } from "@/types";
 
-export default function Header() {
+export default function Header({ products }: { products: Product[] }) {
   const pathname = usePathname();
   const itemCount = useCartStore((state) => state.itemCount);
   const [mounted, setMounted] = useState(false);
@@ -15,6 +15,7 @@ export default function Header() {
   const searchButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -155,7 +156,7 @@ export default function Header() {
       <SearchModal
         isOpen={searchOpen}
         onClose={handleSearchClose}
-        products={MOCK_PRODUCTS}
+        products={products}
       />
     </>
   );
