@@ -26,9 +26,11 @@ export default function Header({ products }: { products: Product[] }) {
   };
 
   const navLinks = [
-    { href: "/", label: "Collections" },
     { href: "/new-arrivals", label: "New Arrivals" },
-    { href: "/shop", label: "Lehengas" },
+    ...categories.map((category) => ({
+      href: `/shop/${category.slug}`,
+      label: category.name,
+    })),
     { href: "/atelier", label: "The Atelier" },
     { href: "/contact", label: "Contact" },
   ];
@@ -135,15 +137,13 @@ export default function Header({ products }: { products: Product[] }) {
                   <Link
                     key={link.label}
                     href={link.href}
-                    className={`text-xs sm:text-[13px] font-inter font-medium uppercase tracking-[0.18em] transition-all pb-1.5 relative group hover:text-[#c9a465] ${
-                      isActive ? "text-[#c9a465]" : "text-[#4a4a4a]"
-                    }`}
+                    className={`text-xs sm:text-[13px] font-inter font-medium uppercase tracking-[0.18em] transition-all pb-1.5 relative group hover:text-[#c9a465] ${isActive ? "text-[#c9a465]" : "text-[#4a4a4a]"
+                      }`}
                   >
                     {link.label}
                     <span
-                      className={`absolute bottom-0 left-0 w-full h-[1.5px] bg-[#c9a465] transform transition-transform duration-300 origin-left ${
-                        isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                      }`}
+                      className={`absolute bottom-0 left-0 w-full h-[1.5px] bg-[#c9a465] transform transition-transform duration-300 origin-left ${isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                        }`}
                     />
                   </Link>
                 );
