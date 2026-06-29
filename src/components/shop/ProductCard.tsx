@@ -32,7 +32,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Gold Craft Badge (Top Left) */}
       <div className="absolute top-3 left-3 z-10 bg-[#c9a465] text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest select-none shadow-sm">
-        {product.work_types[0] ?? ""}
+        {product.work_types?.[0] ?? ""}
       </div>
 
       <Link href={`/shop/${product.slug}`} className="block w-full">

@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "The Atelier — Our Story & Craftsmanship",
+  description:
+    "Discover the heritage behind MEI Bridal Couture. Learn about our master karigars and traditional embroidery techniques like Zardosi, Aari, and Mirror work.",
+};
 
 export default function AtelierPage() {
   return (

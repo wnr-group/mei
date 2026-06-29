@@ -1,6 +1,13 @@
 // src/app/page.tsx
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+
+export const metadata: Metadata = {
+  title: "MEI Bridal Couture — Handcrafted Elegance",
+  description:
+    "Premium Indian bridal wear — Lehengas, Sarees, and Bespoke Couture. Handcrafted with traditional Aari, Zardosi, and Mirror embroidery.",
+};
 import ProductCard from "@/components/shop/ProductCard";
 import Button from "@/components/ui/Button";
 import { getProducts } from "@/lib/services/products";

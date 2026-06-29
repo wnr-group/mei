@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProductBySlug, getRelatedProducts, getProductsByCategory } from "@/lib/services/products";
@@ -9,6 +10,61 @@ import ShopClient from "@/components/shop/ShopClient";
 
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const normalizedSlug = decodeURIComponent(slug);
+
+  // 1. Check if it's a product
+  const product = await getProductBySlug(normalizedSlug);
+  if (product) {
+    const title = product.name;
+    const description = product.short_description || product.description || `Buy ${product.name} at MEI Bridal Couture.`;
+    const image = product.images?.[0] || product.image_url || "/images/hero_lehenga.png";
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        type: "article",
+        images: [{ url: image }],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [image],
+      },
+    };
+  }
+
+  // 2. Check if it's a category
+  const category = await getCategoryBySlug(normalizedSlug);
+  if (category) {
+    const title = category.name;
+    const description = category.description || `Explore our ${category.name} collection at MEI Bridal Couture.`;
+    const image = category.image_url || "/images/hero_lehenga.png";
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        type: "website",
+        images: [{ url: image }],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [image],
+      },
+    };
+  }
+
+  return {};
 }
 
 function formatPrice(price: number): string {
@@ -32,8 +88,27 @@ export default async function ProductDetailPage({ params }: Props) {
       3
     );
 
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": product.name,
+      "image": product.images?.[0] || product.image_url || "",
+      "description": product.description || product.short_description || "",
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "INR",
+        "price": product.price,
+        "availability": "https://schema.org/InStock",
+      },
+    };
+
     return (
       <main className="flex-1 bg-white">
+        {/* JSON-LD Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {/* Breadcrumbs */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
           <nav className="text-xs uppercase tracking-widest text-[#9a9a9a] font-inter">
@@ -80,7 +155,7 @@ export default async function ProductDetailPage({ params }: Props) {
                   {product.description}
                 </p>
                 <div className="flex flex-wrap gap-3 pt-2">
-                  {product.work_types.map((type) => (
+                  {product.work_types?.map((type) => (
                     <span
                       key={type}
                       className="border border-[#c9a465] text-[#c9a465] text-xs font-bold uppercase tracking-widest px-4 py-2 select-none"

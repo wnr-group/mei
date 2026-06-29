@@ -111,7 +111,7 @@ export default function CartPage() {
                     {/* Details */}
                     <div className="space-y-1">
                       <span className="text-xs uppercase tracking-widest text-[#c9a465] font-semibold">
-                        {item.work_types[0] ?? ""}
+                        {item.work_types?.[0] ?? ""}
                       </span>
                       <h3 className="text-base font-light text-[#1a1a1a] font-inter">
                         {item.name}

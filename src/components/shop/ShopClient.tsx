@@ -13,7 +13,7 @@ export default function ShopClient({ products }: ShopClientProps) {
 
   // Dynamically derive unique work types from products
   const filters = useMemo(() => {
-    const types = [...new Set(products.flatMap((p) => p.work_types))].sort();
+    const types = [...new Set(products.flatMap((p) => p.work_types ?? []))].sort();
     return ["ALL", ...types];
   }, [products]);
 
@@ -22,7 +22,7 @@ export default function ShopClient({ products }: ShopClientProps) {
     if (activeFilter === "ALL") return [...products];
 
     return products.filter((product) =>
-      product.work_types.includes(activeFilter)
+      product.work_types?.includes(activeFilter)
     );
   }, [activeFilter, products]);
 

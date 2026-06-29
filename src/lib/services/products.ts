@@ -46,7 +46,7 @@ export function _mapDbRowToProduct(row: ProductWithRelations): Product {
     price: row.price,
     short_description: row.short_description,
     description: row.description,
-    work_types: row.work_types,
+    work_types: row.work_types ?? [],
     status: row.status,
     category_id: row.category_id,
     category: row.categories ?? null,
