@@ -10,6 +10,9 @@ interface ShopClientProps {
 
 export default function ShopClient({ products }: ShopClientProps) {
   const [activeFilter, setActiveFilter] = useState("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 8;
 
   // Dynamically derive unique work types from products
   const filters = useMemo(() => {
@@ -26,6 +29,20 @@ export default function ShopClient({ products }: ShopClientProps) {
     );
   }, [activeFilter, products]);
 
+  // Calculate total pages
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+
+  // Paginate filtered products
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredProducts, currentPage]);
+
+  const handleFilterChange = (filter: string) => {
+    setActiveFilter(filter);
+    setCurrentPage(1);
+  };
+
   // Show reset button only if there are products but current filter has none
   const showResetButton =
     products.length > 0 && filteredProducts.length === 0;
@@ -40,7 +57,7 @@ export default function ShopClient({ products }: ShopClientProps) {
             {filters.map((filter) => (
               <button
                 key={filter}
-                onClick={() => setActiveFilter(filter)}
+                onClick={() => handleFilterChange(filter)}
                 className={`px-4 py-2.5 text-xs font-bold uppercase tracking-[0.12em] transition-all duration-300 border rounded-none cursor-pointer ${
                   activeFilter === filter
                     ? "bg-[#c9a465] text-white border-[#c9a465]"
@@ -74,7 +91,7 @@ export default function ShopClient({ products }: ShopClientProps) {
             </p>
             {showResetButton && (
               <button
-                onClick={() => setActiveFilter("ALL")}
+                onClick={() => handleFilterChange("ALL")}
                 className="text-xs uppercase tracking-widest font-bold text-[#c9a465] border-b border-[#c9a465] pb-0.5 hover:text-[#d4b87a] hover:border-[#d4b87a] transition-all cursor-pointer"
               >
                 Reset Filters
@@ -83,29 +100,54 @@ export default function ShopClient({ products }: ShopClientProps) {
           </div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
-            {filteredProducts.map((product) => (
+            {paginatedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         )}
 
         {/* Pagination */}
-        <div className="flex justify-center items-center space-x-6 pt-16 text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a] font-inter select-none">
-          <button className="hover:text-[#c9a465] transition-colors cursor-pointer">
-            Previous
-          </button>
-          <span className="text-[#1a1a1a] cursor-default">1</span>
-          <button className="hover:text-[#c9a465] transition-colors cursor-pointer">
-            2
-          </button>
-          <button className="hover:text-[#c9a465] transition-colors cursor-pointer">
-            3
-          </button>
-          <span>...</span>
-          <button className="hover:text-[#c9a465] transition-colors cursor-pointer">
-            Next
-          </button>
-        </div>
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center space-x-6 pt-16 text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a] font-inter select-none">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`transition-colors cursor-pointer ${
+                currentPage === 1
+                  ? "opacity-30 cursor-not-allowed"
+                  : "hover:text-[#c9a465]"
+              }`}
+            >
+              Previous
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`transition-colors cursor-pointer ${
+                  currentPage === page
+                    ? "text-[#1a1a1a] border-b-2 border-[#c9a465] pb-0.5"
+                    : "hover:text-[#c9a465]"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`transition-colors cursor-pointer ${
+                currentPage === totalPages
+                  ? "opacity-30 cursor-not-allowed"
+                  : "hover:text-[#c9a465]"
+              }`}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </>
   );
