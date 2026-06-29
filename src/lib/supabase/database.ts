@@ -30,9 +30,41 @@ export type Database = {
         Update: { name?: string; email?: string | null; phone?: string | null; city?: string | null }
       }
       orders: {
-        Row: { id: string; order_number: string; customer_id: string | null; status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED'; total: number; notes: string | null; created_at: string; updated_at: string }
-        Insert: { id?: string; order_number?: string; customer_id?: string | null; status?: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED'; total: number; notes?: string | null }
-        Update: { status?: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED'; total?: number; notes?: string | null }
+        Row: {
+          id: string;
+          order_number: string;
+          customer_id: string | null;
+          status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+          total: number;
+          notes: string | null;
+          payment_id: string | null;
+          payment_provider: string | null;
+          payment_metadata: Json | null;
+          shipping_address: Json | null;
+          created_at: string;
+          updated_at: string;
+        }
+        Insert: {
+          id?: string;
+          order_number?: string;
+          customer_id?: string | null;
+          status?: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+          total: number;
+          notes?: string | null;
+          payment_id?: string | null;
+          payment_provider?: string | null;
+          payment_metadata?: Json | null;
+          shipping_address?: Json | null;
+        }
+        Update: {
+          status?: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+          total?: number;
+          notes?: string | null;
+          payment_id?: string | null;
+          payment_provider?: string | null;
+          payment_metadata?: Json | null;
+          shipping_address?: Json | null;
+        }
       }
       order_items: {
         Row: { id: string; order_id: string; product_id: string | null; product_name: string; quantity: number; unit_price: number; created_at: string }
