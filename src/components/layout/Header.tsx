@@ -25,6 +25,15 @@ export default function Header({ products }: { products: Product[] }) {
     requestAnimationFrame(() => searchButtonRef.current?.focus());
   };
 
+  // Derive unique categories from the products list (deduped by id)
+  const categories = Array.from(
+    products
+      .map((p) => p.category)
+      .filter((c): c is NonNullable<typeof c> => c !== null)
+      .reduce((map, cat) => map.set(cat.id, cat), new Map<string, { id: string; name: string; slug: string }>())
+      .values()
+  );
+
   const navLinks = [
     { href: "/new-arrivals", label: "New Arrivals" },
     ...categories.map((category) => ({
