@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { FunctionsClient } from "@supabase/functions-js";
 
 export interface CreateOrderInput {
   customer: {
@@ -27,19 +27,35 @@ export interface CreateOrderResult {
   total: number;
 }
 
-function getClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+/**
+ * Returns the Edge Function base URL.
+ *
+ * In production this is automatically derived from NEXT_PUBLIC_SUPABASE_URL.
+ * In local dev, set NEXT_PUBLIC_SUPABASE_FUNCTIONS_URL to point at the local
+ * `supabase functions serve` server (e.g. http://127.0.0.1:54321/functions/v1)
+ * while keeping NEXT_PUBLIC_SUPABASE_URL pointing at the remote project for
+ * auth and data queries.
+ */
+function getFunctionsUrl(): string {
+  const override = process.env.NEXT_PUBLIC_SUPABASE_FUNCTIONS_URL;
+  if (override) return override;
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  return `${base}/functions/v1`;
+}
+
+function getFunctionsClient(): FunctionsClient {
+  return new FunctionsClient(getFunctionsUrl(), {
+    headers: {
+      apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    },
+  });
 }
 
 export async function createOrder(input: CreateOrderInput): Promise<CreateOrderResult> {
-  const supabase = getClient();
+  const functions = getFunctionsClient();
   const requestId = crypto.randomUUID();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).functions.invoke("create-order", {
+  const { data, error } = await functions.invoke("create-order", {
     body: input,
     headers: { "x-request-id": requestId },
   });

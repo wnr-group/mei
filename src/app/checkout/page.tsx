@@ -148,6 +148,7 @@ export default function CheckoutPage() {
           items: items.map((item) => ({
             product_id: item.id,
             quantity: item.quantity,
+            unit_price: item.price, // used by bypass mode only; server ignores in production
           })),
         }),
       });
