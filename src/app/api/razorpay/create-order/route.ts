@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     const amountPaise = Math.round(total * 100);
 
     // Bypass mode: return a fake Razorpay order for local development
-    if (process.env.NEXT_PUBLIC_ENABLE_PAYMENT_BYPASS === "true") {
+    if (process.env.ENABLE_PAYMENT_BYPASS === "true") {
       return NextResponse.json({
         razorpay_order_id: `bypass_${crypto.randomUUID()}`,
         amount: amountPaise,
@@ -55,8 +55,12 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET!;
+    const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keyId || !keySecret) {
+      console.error("[razorpay/create-order] missing Razorpay credentials");
+      return NextResponse.json({ error: "SERVER_MISCONFIGURED" }, { status: 500 });
+    }
     const credentials = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
 
     const razorRes = await fetch("https://api.razorpay.com/v1/orders", {

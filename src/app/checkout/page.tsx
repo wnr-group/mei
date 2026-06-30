@@ -185,7 +185,7 @@ export default function CheckoutPage() {
             },
             payment: {
               provider: "razorpay",
-              payment_id: "bypass_pay_id",
+              payment_id: `bypass_pay_${order_id}`,
               order_id,
               signature: "bypass_sig",
             },
