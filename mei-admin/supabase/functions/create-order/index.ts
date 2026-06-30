@@ -4,6 +4,7 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers':
     'authorization, x-client-info, apikey, content-type, x-request-id',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 function jsonResponse(data: unknown, status = 200, extra: Record<string, string> = {}) {
@@ -71,7 +72,10 @@ Deno.serve(async (req) => {
   log('create-order started');
 
   try {
+    log('request received');
+
     const body = (await req.json()) as CreateOrderRequest;
+    log('payload parsed', { has_customer: !!body.customer, has_items: !!body.items, has_payment: !!body.payment });
 
     if (!body.customer?.email || !body.items?.length || !body.payment?.payment_id) {
       log('invalid payload');
@@ -79,32 +83,69 @@ Deno.serve(async (req) => {
     }
 
     const bypass = Deno.env.get('ENABLE_PAYMENT_BYPASS') === 'true';
+    log('environment check', {
+      bypass_enabled: bypass,
+      has_supabase_url: !!Deno.env.get('SUPABASE_URL'),
+      has_service_role: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+      has_razorpay_secret: !!Deno.env.get('RAZORPAY_KEY_SECRET'),
+    });
 
-    if (!bypass) {
-      const secret = Deno.env.get('RAZORPAY_KEY_SECRET');
-      if (!secret) {
-        log('RAZORPAY_KEY_SECRET not configured');
-        return jsonResponse({ success: false, error: 'SERVER_MISCONFIGURED' }, 500);
-      }
-      const valid = await verifyRazorpaySignature(
-        body.payment.order_id,
-        body.payment.payment_id,
-        body.payment.signature,
-        secret
+    // Handle bypass mode early - no signature verification or database access needed
+    if (bypass) {
+      log('bypass mode — signature verification and database calls skipped');
+      return jsonResponse(
+        {
+          success: true,
+          order_id: crypto.randomUUID(),
+          order_number: `BYPASS-${Date.now()}`,
+          total: body.items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0),
+        },
+        200,
+        { 'x-request-id': requestId }
       );
-      if (!valid) {
-        log('HMAC verification failed', { payment_id: body.payment.payment_id });
-        return jsonResponse({ success: false, error: 'PAYMENT_VERIFICATION_FAILED' }, 400);
-      }
-      log('HMAC verified', { payment_id: body.payment.payment_id });
-    } else {
-      log('bypass mode — signature verification skipped');
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    // Production mode: verify signature
+    const secret = Deno.env.get('RAZORPAY_KEY_SECRET');
+    if (!secret) {
+      log('RAZORPAY_KEY_SECRET not configured');
+      return jsonResponse({
+        success: false,
+        error: 'SERVER_MISCONFIGURED',
+        detail: 'RAZORPAY_KEY_SECRET not set'
+      }, 500);
+    }
+
+    const valid = await verifyRazorpaySignature(
+      body.payment.order_id,
+      body.payment.payment_id,
+      body.payment.signature,
+      secret
     );
+    if (!valid) {
+      log('HMAC verification failed', { payment_id: body.payment.payment_id });
+      return jsonResponse({ success: false, error: 'PAYMENT_VERIFICATION_FAILED' }, 400);
+    }
+    log('HMAC verified', { payment_id: body.payment.payment_id });
+
+    // Production mode: verify Supabase credentials
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      log('missing supabase credentials', {
+        url_missing: !supabaseUrl,
+        key_missing: !serviceRoleKey,
+      });
+      return jsonResponse({
+        success: false,
+        error: 'SERVER_MISCONFIGURED',
+        detail: `Missing: ${!supabaseUrl ? 'SUPABASE_URL ' : ''}${!serviceRoleKey ? 'SUPABASE_SERVICE_ROLE_KEY' : ''}`.trim(),
+      }, 500);
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    log('supabase client created');
 
     const { data, error } = await supabase.rpc('create_order_txn', {
       p_customer: body.customer,
@@ -120,11 +161,19 @@ Deno.serve(async (req) => {
     });
 
     if (error) {
-      log('RPC error', { message: error.message });
+      log('RPC error', {
+        message: error.message,
+        code: (error as any).code,
+        details: (error as any).details,
+      });
       if (error.message?.includes('PRODUCT_NOT_FOUND')) {
         return jsonResponse({ success: false, error: 'PRODUCT_NOT_FOUND' }, 400);
       }
-      return jsonResponse({ success: false, error: 'ORDER_CREATION_FAILED' }, 500);
+      return jsonResponse({
+        success: false,
+        error: 'ORDER_CREATION_FAILED',
+        detail: error.message,
+      }, 500);
     }
 
     log('order created', {
