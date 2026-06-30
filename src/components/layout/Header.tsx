@@ -7,7 +7,17 @@ import { useEffect, useRef, useState } from "react";
 import SearchModal from "@/components/search/SearchModal";
 import type { Product } from "@/types";
 
-export default function Header({ products }: { products: Product[] }) {
+export interface HeaderNavCategory {
+  slug: string;
+  name: string;
+}
+
+interface HeaderProps {
+  products: Product[];
+  categories?: HeaderNavCategory[];
+}
+
+export default function Header({ products, categories = [] }: HeaderProps) {
   const pathname = usePathname();
   const itemCount = useCartStore((state) => state.itemCount);
   const [mounted, setMounted] = useState(false);
@@ -25,10 +35,14 @@ export default function Header({ products }: { products: Product[] }) {
     requestAnimationFrame(() => searchButtonRef.current?.focus());
   };
 
+  // Nav is driven by live categories (MEI-17/18/21), with New Arrivals,
+  // The Atelier, and Contact kept as fixed entries around them.
   const navLinks = [
-    { href: "/", label: "Collections" },
     { href: "/new-arrivals", label: "New Arrivals" },
-    { href: "/shop", label: "Lehengas" },
+    ...categories.map((category) => ({
+      href: `/shop/${category.slug}`,
+      label: category.name,
+    })),
     { href: "/atelier", label: "The Atelier" },
     { href: "/contact", label: "Contact" },
   ];
