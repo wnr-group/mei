@@ -23,23 +23,16 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/shop"
+                  href="/about"
                   className="text-sm text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
                 >
                   About Us
                 </Link>
               </li>
+             
               <li>
                 <Link
-                  href="/shop"
-                  className="text-sm text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
-                >
-                  The Atelier
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
+                  href="/craftmanship"
                   className="text-sm text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
                 >
                   Craftsmanship
@@ -47,7 +40,7 @@ export default function Footer() {
               </li>
                <li>
                 <Link
-                  href="/contact"
+                  href="/faq"
                   className="text-sm text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
                 >
                   FAQs
@@ -64,24 +57,20 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <span className="text-sm text-[#4a4a4a] font-inter">
-                  New Arrivals
+                  Bridal Jewellery
                 </span>
               </li>
               <li>
                 <span className="text-sm text-[#4a4a4a] font-inter">
-                  Bridal Lehengas
+                  Designer Wear
                 </span>
               </li>
               <li>
                 <span className="text-sm text-[#4a4a4a] font-inter">
-                 Heritage Sarees
+                 Customized Costumes
                 </span>
               </li>
-               <li>
-                <span className="text-sm text-[#4a4a4a] font-inter">
-                 Evening Gowns
-                </span>
-              </li>
+               
             </ul>
           </div>
 
