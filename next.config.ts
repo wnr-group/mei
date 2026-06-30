@@ -21,8 +21,7 @@ const nextConfig: NextConfig = {
       {
         protocol: supabaseProtocol,
         hostname: supabaseHostname,
-        port: supabasePort,
-        pathname: "/storage/v1/object/public/**",
+        port: supabasePort || undefined,
       },
     ],
   },

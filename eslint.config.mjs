@@ -12,18 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Root-level utility/test scripts (CommonJS, not part of app source)
-    "*.js",
-    // Claude Code worktrees live inside the project directory — never lint them
+    // Worktree and cache artifacts
     ".claude/**",
   ]),
-  {
-    rules: {
-      // Suppress react-hooks/set-state-in-effect for hydration fix pattern
-      // This pattern is necessary to prevent hydration mismatches on Cart/Checkout pages
-      "react-hooks/set-state-in-effect": "off",
-    },
-  },
 ]);
 
 export default eslintConfig;

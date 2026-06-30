@@ -4,6 +4,8 @@ import "./globals.css";
 import Header, { type HeaderNavCategory } from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import PromoStrip from "@/components/layout/PromoStrip";
+import WhatsAppButton from "@/components/layout/WhatsAppButton";
+import { getProducts } from "@/lib/services/products";
 import { getCategories } from "@/lib/services/categories";
 
 const cormorant = Cormorant_Garamond({
@@ -29,6 +31,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const products = await getProducts();
+
   // Drive the header nav from live categories. A fetch failure must not take
   // down every page, so fall back to an empty nav (New Arrivals / Atelier /
   // Contact still render).
@@ -47,9 +51,10 @@ export default async function RootLayout({
     <html lang="en" className={`${cormorant.variable} ${inter.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-white text-[#1A1A1A] antialiased">
         <PromoStrip />
-        <Header categories={navCategories} />
+        <Header products={products} categories={navCategories} />
         <div className="flex-1 flex flex-col">{children}</div>
         <Footer />
+        <WhatsAppButton />
       </body>
     </html>
   );
