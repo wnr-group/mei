@@ -62,6 +62,7 @@ export default function CheckoutPage() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -416,6 +417,11 @@ export default function CheckoutPage() {
                   `Pay Now — ${formatCurrency(grandTotal)}`
                 )}
               </button>
+              {paymentError && (
+                <p className="text-center text-xs text-red-500 font-inter mt-2">
+                  {paymentError}
+                </p>
+              )}
               <p className="text-center text-xs uppercase tracking-widest text-[#9a9a9a] font-bold select-none">
                 🔒 Secured by Razorpay
               </p>
