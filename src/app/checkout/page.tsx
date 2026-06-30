@@ -49,6 +49,7 @@ export default function CheckoutPage() {
 
   const [mounted, setMounted] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [scriptReady, setScriptReady] = useState(false);
   const [formData, setFormData] = useState({
     name: "Aarav Sharma",
     email: "aarav@example.com",
@@ -72,7 +73,10 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     // Load Razorpay checkout script if not already present
-    if (document.getElementById("razorpay-script")) {
+    const existingScript = document.getElementById("razorpay-script");
+    if (existingScript) {
+      // Script already loaded, check if Razorpay is available
+      setScriptReady(!!(window as any).Razorpay);
       return;
     }
 
@@ -80,6 +84,16 @@ export default function CheckoutPage() {
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.id = "razorpay-script";
     script.async = true;
+
+    script.onload = () => {
+      setScriptReady(true);
+    };
+
+    script.onerror = () => {
+      setPaymentError("Failed to load Razorpay. Please refresh the page and try again.");
+      setScriptReady(false);
+    };
+
     document.body.appendChild(script);
   }, []);
 
@@ -188,8 +202,8 @@ export default function CheckoutPage() {
 
       // Step 3: SDK guard — ensure Razorpay JS is loaded
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (!(window as any).Razorpay) {
-        setPaymentError("Payment service unavailable. Please refresh and try again.");
+      if (!scriptReady || !(window as any).Razorpay) {
+        setPaymentError("Payment service is loading. Please wait a moment and try again.");
         setIsSubmitting(false);
         return;
       }
