@@ -44,10 +44,15 @@ function getFunctionsUrl(): string {
 }
 
 function getFunctionsClient(): FunctionsClient {
+  // In local dev, NEXT_PUBLIC_SUPABASE_FUNCTIONS_URL points at the local stack whose JWT
+  // secret differs from the remote project. NEXT_PUBLIC_SUPABASE_FUNCTIONS_ANON_KEY holds the
+  // local anon key (from `supabase status`). In production this var is absent and the remote
+  // anon key is used instead.
+  const anonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_FUNCTIONS_ANON_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   return new FunctionsClient(getFunctionsUrl(), {
-    headers: {
-      apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    },
+    headers: { apikey: anonKey },
   });
 }
 

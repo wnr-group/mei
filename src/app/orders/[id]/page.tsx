@@ -1,10 +1,18 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getOrderById } from "@/lib/services/orders-server";
 import { formatCurrency } from "@/lib/utils/format";
 
 interface Props {
   params: Promise<{ id: string }>;
 }
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-IN", {

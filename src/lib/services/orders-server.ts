@@ -1,3 +1,5 @@
+import "server-only";
+
 import { createServiceClient } from "@/lib/supabase/service-client";
 
 export interface ShippingAddress {

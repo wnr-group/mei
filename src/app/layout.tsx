@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/Header";
+import Header, { type HeaderNavCategory } from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import PromoStrip from "@/components/layout/PromoStrip";
 import WhatsAppButton from "@/components/layout/WhatsAppButton";
@@ -26,6 +26,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({
+
   children,
 }: Readonly<{
   children: React.ReactNode;

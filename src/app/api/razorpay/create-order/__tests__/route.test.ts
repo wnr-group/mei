@@ -28,7 +28,7 @@ beforeEach(() => {
   vi.unstubAllEnvs();
   process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
-  process.env.ENABLE_PAYMENT_BYPASS = "false";
+  process.env.NEXT_PUBLIC_ENABLE_PAYMENT_BYPASS = "false";
 });
 
 describe("POST /api/razorpay/create-order", () => {
@@ -57,7 +57,7 @@ describe("POST /api/razorpay/create-order", () => {
   });
 
   it("returns bypass order when NEXT_PUBLIC_ENABLE_PAYMENT_BYPASS is true", async () => {
-    vi.stubEnv("ENABLE_PAYMENT_BYPASS", "true");
+    vi.stubEnv("NEXT_PUBLIC_ENABLE_PAYMENT_BYPASS", "true");
     vi.mocked(createClient).mockReturnValue(
       makeSupabaseClient({ data: [{ id: "p1", price: 1000 }], error: null }) as unknown as ReturnType<typeof createClient>
     );
@@ -71,7 +71,7 @@ describe("POST /api/razorpay/create-order", () => {
   });
 
   it("returns 502 with RAZORPAY_ORDER_FAILED when Razorpay API returns non-ok", async () => {
-    vi.stubEnv("ENABLE_PAYMENT_BYPASS", "false");
+    vi.stubEnv("NEXT_PUBLIC_ENABLE_PAYMENT_BYPASS", "false");
     vi.stubEnv("NEXT_PUBLIC_RAZORPAY_KEY_ID", "rzp_test_key");
     vi.stubEnv("RAZORPAY_KEY_SECRET", "test_secret");
     vi.mocked(createClient).mockReturnValue(
@@ -87,7 +87,7 @@ describe("POST /api/razorpay/create-order", () => {
   });
 
   it("returns razorpay order data on success", async () => {
-    vi.stubEnv("ENABLE_PAYMENT_BYPASS", "false");
+    vi.stubEnv("NEXT_PUBLIC_ENABLE_PAYMENT_BYPASS", "false");
     vi.stubEnv("NEXT_PUBLIC_RAZORPAY_KEY_ID", "rzp_test_key");
     vi.stubEnv("RAZORPAY_KEY_SECRET", "test_secret");
     vi.mocked(createClient).mockReturnValue(

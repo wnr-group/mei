@@ -1,10 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createClient } from "@supabase/supabase-js";
 import { createOrder } from "../orders";
 import type { CreateOrderInput } from "../orders";
 
-vi.mock("@supabase/supabase-js", () => ({
-  createClient: vi.fn(),
+const mockInvoke = vi.fn();
+
+vi.mock("@supabase/functions-js", () => ({
+  // Must use `function`, not arrow, so `new FunctionsClient()` works.
+  FunctionsClient: vi.fn().mockImplementation(function () {
+    return { invoke: mockInvoke };
+  }),
 }));
 
 const validInput: CreateOrderInput = {
@@ -31,30 +35,24 @@ const validInput: CreateOrderInput = {
   },
 };
 
-function makeInvokeClient(result: { data: unknown; error: unknown }) {
-  const invoke = vi.fn().mockResolvedValue(result);
-  return { functions: { invoke } };
-}
-
 beforeEach(() => {
   vi.clearAllMocks();
   process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
+  delete process.env.NEXT_PUBLIC_SUPABASE_FUNCTIONS_ANON_KEY;
+  delete process.env.NEXT_PUBLIC_SUPABASE_FUNCTIONS_URL;
 });
 
 describe("createOrder", () => {
   it("invokes create-order with the full input as body and an x-request-id header", async () => {
-    const client = makeInvokeClient({
+    mockInvoke.mockResolvedValue({
       data: { success: true, order_id: "uuid-1", order_number: "#ORD-9000", total: 120000 },
       error: null,
     });
-    vi.mocked(createClient).mockReturnValue(
-      client as unknown as ReturnType<typeof createClient>
-    );
 
     await createOrder(validInput);
 
-    expect(client.functions.invoke).toHaveBeenCalledWith(
+    expect(mockInvoke).toHaveBeenCalledWith(
       "create-order",
       expect.objectContaining({
         body: validInput,
@@ -64,13 +62,10 @@ describe("createOrder", () => {
   });
 
   it("returns mapped orderId, orderNumber, and total on success", async () => {
-    const client = makeInvokeClient({
+    mockInvoke.mockResolvedValue({
       data: { success: true, order_id: "uuid-1", order_number: "#ORD-9042", total: 120000 },
       error: null,
     });
-    vi.mocked(createClient).mockReturnValue(
-      client as unknown as ReturnType<typeof createClient>
-    );
 
     const result = await createOrder(validInput);
 
@@ -82,10 +77,7 @@ describe("createOrder", () => {
   });
 
   it("throws and logs when invoke returns a transport-level error", async () => {
-    const client = makeInvokeClient({ data: null, error: { message: "Network error" } });
-    vi.mocked(createClient).mockReturnValue(
-      client as unknown as ReturnType<typeof createClient>
-    );
+    mockInvoke.mockResolvedValue({ data: null, error: { message: "Network error" } });
 
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     await expect(createOrder(validInput)).rejects.toMatchObject({ message: "Network error" });
@@ -97,13 +89,10 @@ describe("createOrder", () => {
   });
 
   it("throws with the error code when Edge Function returns success:false", async () => {
-    const client = makeInvokeClient({
+    mockInvoke.mockResolvedValue({
       data: { success: false, error: "PAYMENT_VERIFICATION_FAILED" },
       error: null,
     });
-    vi.mocked(createClient).mockReturnValue(
-      client as unknown as ReturnType<typeof createClient>
-    );
 
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     await expect(createOrder(validInput)).rejects.toThrow("PAYMENT_VERIFICATION_FAILED");
@@ -111,19 +100,47 @@ describe("createOrder", () => {
   });
 
   it("generates a unique x-request-id for each call", async () => {
-    const invoke = vi.fn().mockResolvedValue({
+    mockInvoke.mockResolvedValue({
       data: { success: true, order_id: "uuid-1", order_number: "#ORD-9000", total: 5000 },
       error: null,
     });
-    vi.mocked(createClient).mockReturnValue(
-      { functions: { invoke } } as unknown as ReturnType<typeof createClient>
-    );
 
     await createOrder(validInput);
     await createOrder(validInput);
 
-    const id1 = invoke.mock.calls[0][1].headers["x-request-id"];
-    const id2 = invoke.mock.calls[1][1].headers["x-request-id"];
+    const id1 = mockInvoke.mock.calls[0][1].headers["x-request-id"];
+    const id2 = mockInvoke.mock.calls[1][1].headers["x-request-id"];
     expect(id1).not.toBe(id2);
+  });
+
+  it("uses NEXT_PUBLIC_SUPABASE_FUNCTIONS_ANON_KEY when set (local dev)", async () => {
+    const { FunctionsClient } = await import("@supabase/functions-js");
+    process.env.NEXT_PUBLIC_SUPABASE_FUNCTIONS_ANON_KEY = "local-anon-key";
+    mockInvoke.mockResolvedValue({
+      data: { success: true, order_id: "uuid-1", order_number: "#ORD-1", total: 0 },
+      error: null,
+    });
+
+    await createOrder(validInput);
+
+    expect(FunctionsClient).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ headers: expect.objectContaining({ apikey: "local-anon-key" }) })
+    );
+  });
+
+  it("falls back to NEXT_PUBLIC_SUPABASE_ANON_KEY when functions key is absent", async () => {
+    const { FunctionsClient } = await import("@supabase/functions-js");
+    mockInvoke.mockResolvedValue({
+      data: { success: true, order_id: "uuid-1", order_number: "#ORD-1", total: 0 },
+      error: null,
+    });
+
+    await createOrder(validInput);
+
+    expect(FunctionsClient).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ headers: expect.objectContaining({ apikey: "test-anon-key" }) })
+    );
   });
 });
