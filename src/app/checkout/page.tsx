@@ -49,6 +49,7 @@ export default function CheckoutPage() {
 
   const [mounted, setMounted] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [orderUuid, setOrderUuid] = useState<string | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
   const [formData, setFormData] = useState({
     name: "Aarav Sharma",
@@ -193,6 +194,7 @@ export default function CheckoutPage() {
           });
           clearCart();
           setOrderId(result.orderNumber);
+          setOrderUuid(result.orderId);
         } catch (err) {
           setPaymentError("Order creation failed. Please try again.");
         } finally {
@@ -256,6 +258,7 @@ export default function CheckoutPage() {
             });
             clearCart();
             setOrderId(result.orderNumber);
+            setOrderUuid(result.orderId);
           } catch (err) {
             setPaymentError(
               `Payment received but order creation failed. ` +
@@ -323,13 +326,21 @@ export default function CheckoutPage() {
               Your handcrafted bridal piece is registered in our atelier systems. We will reach out to you within 24 hours to confirm your measurements and begin production.
             </p>
           </div>
-          <div className="pt-4">
+          <div className="pt-4 flex flex-col items-center gap-3">
             <Link
               href="/shop"
               className="inline-block bg-[#1a1a1a] text-white px-8 py-3.5 text-xs font-semibold uppercase tracking-widest hover:bg-[#333333] transition-colors"
             >
               Continue Browsing
             </Link>
+            {orderUuid && (
+              <Link
+                href={`/orders/${orderUuid}`}
+                className="text-xs uppercase tracking-widest font-bold text-[#c9a465] border-b border-[#c9a465] pb-0.5 hover:text-[#d4b87a] transition-all"
+              >
+                View Order Details
+              </Link>
+            )}
           </div>
         </div>
       </main>
