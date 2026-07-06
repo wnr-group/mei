@@ -8,6 +8,10 @@ import { calculateShipping } from "@/lib/config/shipping";
 import { formatCurrency } from "@/lib/utils/format";
 import { createOrder } from "@/lib/services/orders";
 
+interface RazorpayWindow extends Window {
+  Razorpay: new (options: Record<string, unknown>) => { open: () => void };
+}
+
 const isSupabaseUrl = (url?: string | null) => {
   return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
 };
@@ -76,8 +80,9 @@ export default function CheckoutPage() {
     // Load Razorpay checkout script if not already present
     const existingScript = document.getElementById("razorpay-script");
     if (existingScript) {
-      // Script already loaded, check if Razorpay is available
-      setScriptReady(!!(window as any).Razorpay);
+      // Script already loaded, check if Razorpay is available.
+      // Deferred to avoid calling setState synchronously inside an effect.
+      setTimeout(() => setScriptReady(!!(window as unknown as RazorpayWindow).Razorpay), 0);
       return;
     }
 
@@ -195,7 +200,7 @@ export default function CheckoutPage() {
           clearCart();
           setOrderId(result.orderNumber);
           setOrderUuid(result.orderId);
-        } catch (err) {
+        } catch (_err) {
           setPaymentError("Order creation failed. Please try again.");
         } finally {
           setIsSubmitting(false);
@@ -204,16 +209,14 @@ export default function CheckoutPage() {
       }
 
       // Step 3: SDK guard — ensure Razorpay JS is loaded
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (!scriptReady || !(window as any).Razorpay) {
+      if (!scriptReady || !(window as unknown as RazorpayWindow).Razorpay) {
         setPaymentError("Payment service is loading. Please wait a moment and try again.");
         setIsSubmitting(false);
         return;
       }
 
       // Step 4: Open Razorpay modal with success / failure / dismiss handlers
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const razorpay = new (window as any).Razorpay({
+      const razorpay = new (window as unknown as RazorpayWindow).Razorpay({
         key: key_id,
         amount,
         currency,
@@ -259,7 +262,7 @@ export default function CheckoutPage() {
             clearCart();
             setOrderId(result.orderNumber);
             setOrderUuid(result.orderId);
-          } catch (err) {
+          } catch (_err) {
             setPaymentError(
               `Payment received but order creation failed. ` +
                 `Please contact support with payment reference: ` +
@@ -281,7 +284,7 @@ export default function CheckoutPage() {
       });
 
       razorpay.open();
-    } catch (err) {
+    } catch (_err) {
       setPaymentError("Unable to initiate payment. Please try again.");
       setIsSubmitting(false);
     }
