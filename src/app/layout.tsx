@@ -20,9 +20,37 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "MEI Bridal Couture — Handcrafted Elegance",
+  metadataBase: new URL("https://mei-bridal.com"),
+  title: {
+    default: "MEI Bridal Couture — Handcrafted Elegance",
+    template: "%s | MEI Bridal Couture",
+  },
   description:
     "Premium Indian bridal wear — Lehengas, Sarees, and Bespoke Couture. Handcrafted with Aari, Zardosi, and Mirror embroidery.",
+  openGraph: {
+    title: "MEI Bridal Couture — Handcrafted Elegance",
+    description:
+      "Premium Indian bridal wear — Lehengas, Sarees, and Bespoke Couture. Handcrafted with Aari, Zardosi, and Mirror embroidery.",
+    url: "https://mei-bridal.com",
+    siteName: "MEI Bridal Couture",
+    images: [
+      {
+        url: "/images/hero_lehenga.png",
+        width: 1200,
+        height: 630,
+        alt: "MEI Bridal Couture Hero Backdrop",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MEI Bridal Couture — Handcrafted Elegance",
+    description:
+      "Premium Indian bridal wear — Lehengas, Sarees, and Bespoke Couture. Handcrafted with Aari, Zardosi, and Mirror embroidery.",
+    images: ["/images/hero_lehenga.png"],
+  },
 };
 
 export default async function RootLayout({
