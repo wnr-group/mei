@@ -42,7 +42,7 @@ export default async function Home() {
             fill
             priority
             sizes="100vw"
-            className="object-cover object-top opacity-65"
+            className="object-cover object-center opacity-65"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
         </div>

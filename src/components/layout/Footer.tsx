@@ -1,6 +1,7 @@
 import Link from "next/link";
+import type { Category } from "@/types";
 
-export default function Footer() {
+export default function Footer({ categories }: { categories: Category[] }) {
   return (
     <footer className="bg-white border-t border-[#e8e0d5] py-16 text-[#1a1a1a]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -49,28 +50,24 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Company Links */}
+          {/* Collections */}
           <div className="space-y-4">
             <h4 className="text-xs font-inter font-semibold uppercase tracking-widest text-[#c9a465]">
               COLLECTIONS
             </h4>
             <ul className="space-y-2">
               <li>
-                <span className="text-sm text-[#4a4a4a] font-inter">
-                  Bridal Jewellery
-                </span>
+                <Link href="/new-arrivals" className="text-sm text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter">
+                  New Arrivals
+                </Link>
               </li>
-              <li>
-                <span className="text-sm text-[#4a4a4a] font-inter">
-                  Designer Wear
-                </span>
-              </li>
-              <li>
-                <span className="text-sm text-[#4a4a4a] font-inter">
-                 Customized Costumes
-                </span>
-              </li>
-               
+              {categories.map((cat) => (
+                <li key={cat.id}>
+                  <Link href={`/shop/${cat.slug}`} className="text-sm text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter">
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

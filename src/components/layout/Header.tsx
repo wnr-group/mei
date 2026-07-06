@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation";
 import { useCartStore } from "@/store/cart";
 import { useEffect, useRef, useState } from "react";
 import SearchModal from "@/components/search/SearchModal";
-import type { Product } from "@/types";
+import type { Product, Category } from "@/types";
 
-export default function Header({ products }: { products: Product[] }) {
+export default function Header({ products, categories }: { products: Product[]; categories: Category[] }) {
   const pathname = usePathname();
   const itemCount = useCartStore((state) => state.itemCount);
   const [mounted, setMounted] = useState(false);
@@ -24,15 +24,6 @@ export default function Header({ products }: { products: Product[] }) {
     // Restore focus to the trigger so keyboard users don't lose their place
     requestAnimationFrame(() => searchButtonRef.current?.focus());
   };
-
-  // Derive unique categories from the products list (deduped by id)
-  const categories = Array.from(
-    products
-      .map((p) => p.category)
-      .filter((c): c is NonNullable<typeof c> => c !== null)
-      .reduce((map, cat) => map.set(cat.id, cat), new Map<string, { id: string; name: string; slug: string }>())
-      .values()
-  );
 
   const navLinks = [
     { href: "/new-arrivals", label: "New Arrivals" },

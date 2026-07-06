@@ -19,7 +19,7 @@ export default async function ShopPage() {
           BRIDAL MASTERPIECES
         </span>
         <h1 className="text-5xl font-light text-white font-cormorant italic select-none">
-          Lehengas
+          All Collections
         </h1>
       </div>
 

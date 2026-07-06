@@ -8,7 +8,7 @@ import {
 } from "@/lib/config/shipping";
 import { formatCurrency } from "@/lib/utils/format";
 
-export default function PromoStrip() {
+export default function PromoStrip({ defaultText }: { defaultText?: string }) {
   const total = useCartStore((state) => state.total);
   const [mounted, setMounted] = useState(false);
 
@@ -17,7 +17,7 @@ export default function PromoStrip() {
     setMounted(true);
   }, []);
 
-  const defaultMessage = `Free Shipping on orders above ${formatCurrency(FREE_SHIPPING_THRESHOLD)}`;
+  const defaultMessage = defaultText ?? `Free Shipping on orders above ${formatCurrency(FREE_SHIPPING_THRESHOLD)}`;
 
   if (!mounted) {
     return (
