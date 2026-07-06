@@ -6,6 +6,11 @@ import Image from "next/image";
 import { useCartStore } from "@/store/cart";
 import { calculateShipping } from "@/lib/config/shipping";
 import { formatCurrency } from "@/lib/utils/format";
+import { createOrder } from "@/lib/services/orders";
+
+interface RazorpayWindow extends Window {
+  Razorpay: new (options: Record<string, unknown>) => { open: () => void };
+}
 
 const isSupabaseUrl = (url?: string | null) => {
   return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
@@ -48,6 +53,8 @@ export default function CheckoutPage() {
 
   const [mounted, setMounted] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [orderUuid, setOrderUuid] = useState<string | null>(null);
+  const [scriptReady, setScriptReady] = useState(false);
   const [formData, setFormData] = useState({
     name: "Aarav Sharma",
     email: "aarav@example.com",
@@ -62,10 +69,38 @@ export default function CheckoutPage() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    // Load Razorpay checkout script if not already present
+    const existingScript = document.getElementById("razorpay-script");
+    if (existingScript) {
+      // Script already loaded, check if Razorpay is available.
+      // Deferred to avoid calling setState synchronously inside an effect.
+      setTimeout(() => setScriptReady(!!(window as unknown as RazorpayWindow).Razorpay), 0);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.id = "razorpay-script";
+    script.async = true;
+
+    script.onload = () => {
+      setScriptReady(true);
+    };
+
+    script.onerror = () => {
+      setPaymentError("Failed to load Razorpay. Please refresh the page and try again.");
+      setScriptReady(false);
+    };
+
+    document.body.appendChild(script);
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,19 +137,157 @@ export default function CheckoutPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (isSubmitting) return;
     if (!validate()) return;
-
+    setPaymentError(null);
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    try {
+      // Step 1: Create Razorpay order via API (server-side price verification)
+      const res = await fetch("/api/razorpay/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((item) => ({
+            product_id: item.id,
+            quantity: item.quantity,
+            unit_price: item.price, // used by bypass mode only; server ignores in production
+          })),
+        }),
+      });
+
+      if (!res.ok) {
+        setPaymentError("Unable to initiate payment. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const { razorpay_order_id: order_id, amount, currency, key_id, bypass } = await res.json();
+
+      // Step 2: Bypass mode (local development / payment bypass env flag)
+      if (bypass) {
+        try {
+          const result = await createOrder({
+            customer: {
+              name: formData.name,
+              email: formData.email,
+              phone: formData.phone,
+              city: formData.city,
+            },
+            items: items.map((item) => ({
+              product_id: item.id,
+              name: item.name,
+              quantity: item.quantity,
+            })),
+            shipping_address: {
+              addressLine1: formData.addressLine1,
+              addressLine2: formData.addressLine2,
+              city: formData.city,
+              state: formData.state,
+              pincode: formData.pincode,
+              country: formData.country,
+            },
+            payment: {
+              provider: "razorpay",
+              payment_id: `bypass_pay_${order_id}`,
+              order_id,
+              signature: "bypass_sig",
+            },
+          });
+          clearCart();
+          setOrderId(result.orderNumber);
+          setOrderUuid(result.orderId);
+        } catch (_err) {
+          setPaymentError("Order creation failed. Please try again.");
+        } finally {
+          setIsSubmitting(false);
+        }
+        return;
+      }
+
+      // Step 3: SDK guard — ensure Razorpay JS is loaded
+      if (!scriptReady || !(window as unknown as RazorpayWindow).Razorpay) {
+        setPaymentError("Payment service is loading. Please wait a moment and try again.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Step 4: Open Razorpay modal with success / failure / dismiss handlers
+      const razorpay = new (window as unknown as RazorpayWindow).Razorpay({
+        key: key_id,
+        amount,
+        currency,
+        order_id,
+        name: "MEI Bridal Couture",
+        prefill: { name: formData.name, email: formData.email, contact: formData.phone },
+        theme: { color: "#c9a465" },
+
+        handler: async (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) => {
+          // Fires on payment SUCCESS only
+          try {
+            const result = await createOrder({
+              customer: {
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                city: formData.city,
+              },
+              items: items.map((item) => ({
+                product_id: item.id,
+                name: item.name,
+                quantity: item.quantity,
+              })),
+              shipping_address: {
+                addressLine1: formData.addressLine1,
+                addressLine2: formData.addressLine2,
+                city: formData.city,
+                state: formData.state,
+                pincode: formData.pincode,
+                country: formData.country,
+              },
+              payment: {
+                provider: "razorpay",
+                payment_id: response.razorpay_payment_id,
+                order_id: response.razorpay_order_id,
+                signature: response.razorpay_signature,
+              },
+            });
+            clearCart();
+            setOrderId(result.orderNumber);
+            setOrderUuid(result.orderId);
+          } catch (_err) {
+            setPaymentError(
+              `Payment received but order creation failed. ` +
+                `Please contact support with payment reference: ` +
+                `${response.razorpay_payment_id} / ${response.razorpay_order_id}`
+            );
+          } finally {
+            setIsSubmitting(false);
+          }
+        },
+
+        modal: {
+          ondismiss: () => setIsSubmitting(false),
+        },
+
+        "payment.failed": () => {
+          setPaymentError("Payment failed. Please try again.");
+          setIsSubmitting(false);
+        },
+      });
+
+      razorpay.open();
+    } catch (_err) {
+      setPaymentError("Unable to initiate payment. Please try again.");
       setIsSubmitting(false);
-      const mockOrderId = "MEI-" + Math.floor(100000 + Math.random() * 900000);
-      clearCart();
-      setOrderId(mockOrderId);
-    }, 1800);
+    }
   };
 
   if (!mounted) {
@@ -156,13 +329,21 @@ export default function CheckoutPage() {
               Your handcrafted bridal piece is registered in our atelier systems. We will reach out to you within 24 hours to confirm your measurements and begin production.
             </p>
           </div>
-          <div className="pt-4">
+          <div className="pt-4 flex flex-col items-center gap-3">
             <Link
               href="/shop"
               className="inline-block bg-[#1a1a1a] text-white px-8 py-3.5 text-xs font-semibold uppercase tracking-widest hover:bg-[#333333] transition-colors"
             >
               Continue Browsing
             </Link>
+            {orderUuid && (
+              <Link
+                href={`/orders/${orderUuid}`}
+                className="text-xs uppercase tracking-widest font-bold text-[#c9a465] border-b border-[#c9a465] pb-0.5 hover:text-[#d4b87a] transition-all"
+              >
+                View Order Details
+              </Link>
+            )}
           </div>
         </div>
       </main>
@@ -403,6 +584,11 @@ export default function CheckoutPage() {
                   `Pay Now — ${formatCurrency(grandTotal)}`
                 )}
               </button>
+              {paymentError && (
+                <p className="text-center text-xs text-red-500 font-inter mt-2">
+                  {paymentError}
+                </p>
+              )}
               <p className="text-center text-xs uppercase tracking-widest text-[#9a9a9a] font-bold select-none">
                 🔒 Secured by Razorpay
               </p>

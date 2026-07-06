@@ -7,17 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import SearchModal from "@/components/search/SearchModal";
 import type { Product } from "@/types";
 
-export interface HeaderNavCategory {
-  slug: string;
-  name: string;
-}
-
-interface HeaderProps {
-  products: Product[];
-  categories?: HeaderNavCategory[];
-}
-
-export default function Header({ products, categories = [] }: HeaderProps) {
+export default function Header({ products }: { products: Product[] }) {
   const pathname = usePathname();
   const itemCount = useCartStore((state) => state.itemCount);
   const [mounted, setMounted] = useState(false);
@@ -35,8 +25,15 @@ export default function Header({ products, categories = [] }: HeaderProps) {
     requestAnimationFrame(() => searchButtonRef.current?.focus());
   };
 
-  // Nav is driven by live categories (MEI-17/18/21), with New Arrivals,
-  // The Atelier, and Contact kept as fixed entries around them.
+  // Derive unique categories from the products list (deduped by id)
+  const categories = Array.from(
+    products
+      .map((p) => p.category)
+      .filter((c): c is NonNullable<typeof c> => c !== null)
+      .reduce((map, cat) => map.set(cat.id, cat), new Map<string, { id: string; name: string; slug: string }>())
+      .values()
+  );
+
   const navLinks = [
     { href: "/new-arrivals", label: "New Arrivals" },
     ...categories.map((category) => ({
@@ -133,15 +130,13 @@ export default function Header({ products, categories = [] }: HeaderProps) {
                   <Link
                     key={link.label}
                     href={link.href}
-                    className={`text-xs sm:text-[13px] font-inter font-medium uppercase tracking-[0.18em] transition-all pb-1.5 relative group hover:text-[#c9a465] ${
-                      isActive ? "text-[#c9a465]" : "text-[#4a4a4a]"
-                    }`}
+                    className={`text-xs sm:text-[13px] font-inter font-medium uppercase tracking-[0.18em] transition-all pb-1.5 relative group hover:text-[#c9a465] ${isActive ? "text-[#c9a465]" : "text-[#4a4a4a]"
+                      }`}
                   >
                     {link.label}
                     <span
-                      className={`absolute bottom-0 left-0 w-full h-[1.5px] bg-[#c9a465] transform transition-transform duration-300 origin-left ${
-                        isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                      }`}
+                      className={`absolute bottom-0 left-0 w-full h-[1.5px] bg-[#c9a465] transform transition-transform duration-300 origin-left ${isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                        }`}
                     />
                   </Link>
                 );

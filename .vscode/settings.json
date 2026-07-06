@@ -17,5 +17,14 @@
   // a file that is covered by an eslint ignores pattern
   "eslint.options": {
     "warnIgnored": false
-  }
+  },
+  // Enable Deno language server for Supabase Edge Functions only.
+  // This teaches VS Code to resolve jsr: specifiers without breaking
+  // the Next.js TypeScript project in the rest of the workspace.
+  "deno.enablePaths": [
+    "mei-admin/supabase/functions"
+  ],
+  "deno.enable": false,
+  "deno.lint": false,
+  "deno.config": "mei-admin/supabase/functions/deno.json"
 }
