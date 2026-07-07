@@ -2,6 +2,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { getBanners } from "@/lib/services/banner";
+
 
 export const metadata: Metadata = {
   title: "MEI Bridal Couture — Handcrafted Elegance",
@@ -26,40 +28,53 @@ const isSupabaseUrl = (url?: string | null) => {
 ];
 
 export default async function Home() {
-  const [categories, products] = await Promise.all([
+  const [categories, products,banners] = await Promise.all([
     getCategories(),
     getProducts({ limit: 8 }),
+    getBanners()
   ]);
+
+  // link and title handling
+  const heroBanner = banners[0] || null;
+  const heroImage = heroBanner?.image_url || "/images/hero_lehenga.png";
+  const heroTitle = heroBanner?.title || "Handcrafted Elegance";
+  // Fall back to '/shop/bridal-jewellery' if there are no banners, or if the active banner has no link_url
+  const heroLink = heroBanner?.link_url || "/shop/bridal-jewellery";
 
   return (
     <main className="flex-1 bg-white">
       {/* Hero Banner */}
+      
       <section className="relative h-[85vh] w-full bg-[#1a1a1a] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
-            src="/images/hero_lehenga.png"
-            alt="MEI Bridal Couture Hero Backdrop"
+            src={heroImage}
+            alt={heroTitle}
             fill
             priority
             sizes="100vw"
             className="object-cover object-center opacity-65"
+            unoptimized={isSupabaseUrl(heroImage)}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white space-y-6 font-inter">
           <h1 className="text-5xl sm:text-7xl font-light tracking-wide text-white leading-tight font-cormorant max-w-2xl animate-fadeIn">
-            Handcrafted Elegance
+            {heroTitle}
           </h1>
           <div className="flex flex-wrap gap-4 pt-4 animate-fadeIn items-center justify-center">
-            <Link
-              href="/shop/bridal-jewellery"
-              className="hover:bg-[#d4b87a] text-white border border-[#c9a465] hover:border-[#d4b87a] px-8 py-3.5 text-xs font-semibold uppercase tracking-widest transition-colors duration-300"
-            >
-              Shop Bridal Jewellery
-            </Link>
+            {heroLink && (
+              <Link
+                href={heroLink}
+                className="hover:bg-[#d4b87a] text-white border border-[#c9a465] hover:border-[#d4b87a] px-8 py-3.5 text-xs font-semibold uppercase tracking-widest transition-colors duration-300"
+              >
+                Shop Collection
+              </Link>
+            )}
           </div>
         </div>
       </section>
+      
 
       {/* Category Grid */}
       <section className="py-24 bg-white border-b border-[#e8e0d5]/40">
@@ -119,7 +134,9 @@ export default async function Home() {
             <h2 className="text-3xl font-light tracking-[0.15em] text-[#1a1a1a] font-cormorant uppercase">
               Featured Pieces
             </h2>
-            <Button variant="gold" size="sm">View All</Button>
+            <Button variant="gold" size="sm">
+              View All
+            </Button>
           </div>
 
           {products.length === 0 ? (
@@ -145,49 +162,48 @@ export default async function Home() {
         </div>
       </section>
 
-   
       {/* Our Craft Section */}
-     <section className="py-24 bg-white border-b border-[#e8e0d5]/40">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-    <div className="text-center">
-      <h2 className="text-3xl font-light tracking-[0.15em] text-[#1a1a1a] font-cormorant uppercase">
-        Our Craft
-      </h2>
-    </div>
-    
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {crafts.map((craft, idx) => (
-        <Link
-          key={idx}
-          href="/shop"
-          className="group relative aspect-square w-full flex items-end justify-center pb-8 overflow-hidden border border-[#e8e0d5]/10 bg-[#1a1a1a]"
-        >
-          {/* 1. The Actual Image Component */}
-          {craft.image && (
-            <Image
-              src={craft.image}
-              alt={craft.label}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-            />
-          )}
-
-          {/* 2. Dark Overlay (Crucial so white text is readable over light images) */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent transition-opacity duration-500 group-hover:opacity-90" />
-
-          {/* 3. Text Label */}
-          <div className="text-center z-10 transition-transform duration-500 group-hover:translate-y-[-4px]">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-white/90 group-hover:text-white transition-colors duration-300">
-              {craft.label}
-            </span>
-            <div className="w-0 h-[1px] bg-white/50 mx-auto mt-2 transition-all duration-500 group-hover:w-full" />
+      <section className="py-24 bg-white border-b border-[#e8e0d5]/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          <div className="text-center">
+            <h2 className="text-3xl font-light tracking-[0.15em] text-[#1a1a1a] font-cormorant uppercase">
+              Our Craft
+            </h2>
           </div>
-        </Link>
-      ))}
-    </div>
-  </div>
-</section>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {crafts.map((craft, idx) => (
+              <Link
+                key={idx}
+                href="/shop"
+                className="group relative aspect-square w-full flex items-end justify-center pb-8 overflow-hidden border border-[#e8e0d5]/10 bg-[#1a1a1a]"
+              >
+                {/* 1. The Actual Image Component */}
+                {craft.image && (
+                  <Image
+                    src={craft.image}
+                    alt={craft.label}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                )}
+
+                {/* 2. Dark Overlay (Crucial so white text is readable over light images) */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent transition-opacity duration-500 group-hover:opacity-90" />
+
+                {/* 3. Text Label */}
+                <div className="text-center z-10 transition-transform duration-500 group-hover:translate-y-[-4px]">
+                  <span className="text-xs font-bold uppercase tracking-[0.25em] text-white/90 group-hover:text-white transition-colors duration-300">
+                    {craft.label}
+                  </span>
+                  <div className="w-0 h-[1px] bg-white/50 mx-auto mt-2 transition-all duration-500 group-hover:w-full" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Bespoke Banner */}
       <section className="py-20 bg-[#faf8f5] text-center border-b border-[#e8e0d5]/40">
@@ -196,7 +212,8 @@ export default async function Home() {
             Looking for Something Bespoke?
           </h2>
           <p className="text-sm sm:text-base text-[#4a4a4a] leading-relaxed max-w-lg mx-auto font-light">
-            Work with our master artisans to create a one-of-a-kind masterpiece tailored to your vision and measurements.
+            Work with our master artisans to create a one-of-a-kind masterpiece
+            tailored to your vision and measurements.
           </p>
           <div className="pt-2">
             <Link

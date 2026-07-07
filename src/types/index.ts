@@ -8,7 +8,8 @@ export type DbCategory     = Tables["categories"]["Row"];
 export type DbProductMedia = Tables["product_media"]["Row"];
 export type DbOrder        = Tables["orders"]["Row"];
 export type DbOrderItem    = Tables["order_items"]["Row"];
-export type DbEnquiry      = Tables["enquiries"]["Row"];
+export type DbEnquiry = Tables["enquiries"]["Row"];
+export type DbBanner = Tables["banners"]["Row"];
 
 // ── Enums ─────────────────────────────────────────────────────────────────────
 export type ProductStatus = Database["public"]["Enums"]["product_status"];
@@ -63,6 +64,18 @@ export type Order = {
   created_at: string;     // was: createdAt
   items?: OrderItem[];    // joined at read time
 };
+
+export type Banner = {
+  id: string;
+  title: string;
+  image_url: string;
+  link_url: string | null;
+  is_active: boolean;
+  sort_order: number;
+};
+
+
+
 
 // Insert type for the contact form (what gets written to Supabase)
 export type EnquiryInsert = Tables["enquiries"]["Insert"];
