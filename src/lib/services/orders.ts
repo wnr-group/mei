@@ -52,7 +52,7 @@ function getFunctionsClient(): FunctionsClient {
     process.env.NEXT_PUBLIC_SUPABASE_FUNCTIONS_ANON_KEY ??
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   return new FunctionsClient(getFunctionsUrl(), {
-    headers: { apikey: anonKey },
+    headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
   });
 }
 
@@ -66,7 +66,10 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
   });
 
   if (error) {
-    console.error("[OrdersService:createOrder]", error);
+    const context = error instanceof Error ? error.message : JSON.stringify(error);
+    let body: unknown;
+    try { body = (error as { context?: unknown }).context; } catch { /* ignore */ }
+    console.error("[OrdersService:createOrder]", context, body ?? "");
     throw error;
   }
 

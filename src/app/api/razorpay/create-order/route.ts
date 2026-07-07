@@ -11,34 +11,12 @@ function anonClient() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const items: Array<{ product_id: string; quantity: number; unit_price?: number }> = body.items ?? [];
+    const items: Array<{ product_id: string; quantity: number }> = body.items ?? [];
 
     if (!items.length) {
       return NextResponse.json({ error: "EMPTY_CART" }, { status: 400 });
     }
 
-    // ── Bypass mode (local dev only) ────────────────────────────────────────
-    // Short-circuit BEFORE the DB lookup so an empty local Supabase doesn't
-    // block development. Uses client-supplied prices — acceptable because this
-    // path is only active when NEXT_PUBLIC_ENABLE_PAYMENT_BYPASS=true.
-    if (process.env.NEXT_PUBLIC_ENABLE_PAYMENT_BYPASS === "true") {
-      const bypassSubtotal = items.reduce(
-        (sum, i) => sum + (i.unit_price ?? 0) * i.quantity,
-        0
-      );
-      const bypassShipping = bypassSubtotal >= 5000 ? 0 : 150;
-      const bypassTotal = bypassSubtotal + bypassShipping;
-      return NextResponse.json({
-        razorpay_order_id: `bypass_${crypto.randomUUID()}`,
-        amount: Math.round(bypassTotal * 100),
-        currency: "INR",
-        key_id: "bypass",
-        bypass: true,
-      });
-    }
-
-    // ── Production path: server-side price verification ─────────────────────
-    // Client-supplied prices are NEVER trusted here.
     const { data: products, error } = await anonClient()
       .from("products")
       .select("id, price")

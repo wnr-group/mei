@@ -56,14 +56,14 @@ export default function CheckoutPage() {
   const [orderUuid, setOrderUuid] = useState<string | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
   const [formData, setFormData] = useState({
-    name: "Aarav Sharma",
-    email: "aarav@example.com",
-    phone: "+91 98765 43210",
+    name: "",
+    email: "",
+    phone: "",
     addressLine1: "",
     addressLine2: "",
-    city: "Mumbai",
-    state: "Maharashtra",
-    pincode: "400001",
+    city: "",
+    state: "",
+    pincode: "",
     country: "India",
   });
 
@@ -154,7 +154,6 @@ export default function CheckoutPage() {
           items: items.map((item) => ({
             product_id: item.id,
             quantity: item.quantity,
-            unit_price: item.price, // used by bypass mode only; server ignores in production
           })),
         }),
       });
@@ -165,57 +164,16 @@ export default function CheckoutPage() {
         return;
       }
 
-      const { razorpay_order_id: order_id, amount, currency, key_id, bypass } = await res.json();
+      const { razorpay_order_id: order_id, amount, currency, key_id } = await res.json();
 
-      // Step 2: Bypass mode (local development / payment bypass env flag)
-      if (bypass) {
-        try {
-          const result = await createOrder({
-            customer: {
-              name: formData.name,
-              email: formData.email,
-              phone: formData.phone,
-              city: formData.city,
-            },
-            items: items.map((item) => ({
-              product_id: item.id,
-              name: item.name,
-              quantity: item.quantity,
-            })),
-            shipping_address: {
-              addressLine1: formData.addressLine1,
-              addressLine2: formData.addressLine2,
-              city: formData.city,
-              state: formData.state,
-              pincode: formData.pincode,
-              country: formData.country,
-            },
-            payment: {
-              provider: "razorpay",
-              payment_id: `bypass_pay_${order_id}`,
-              order_id,
-              signature: "bypass_sig",
-            },
-          });
-          clearCart();
-          setOrderId(result.orderNumber);
-          setOrderUuid(result.orderId);
-        } catch (_err) {
-          setPaymentError("Order creation failed. Please try again.");
-        } finally {
-          setIsSubmitting(false);
-        }
-        return;
-      }
-
-      // Step 3: SDK guard — ensure Razorpay JS is loaded
+      // Step 2: SDK guard — Razorpay JS must be loaded
       if (!scriptReady || !(window as unknown as RazorpayWindow).Razorpay) {
         setPaymentError("Payment service is loading. Please wait a moment and try again.");
         setIsSubmitting(false);
         return;
       }
 
-      // Step 4: Open Razorpay modal with success / failure / dismiss handlers
+      // Step 3: Open Razorpay modal with success / failure / dismiss handlers
       const razorpay = new (window as unknown as RazorpayWindow).Razorpay({
         key: key_id,
         amount,
