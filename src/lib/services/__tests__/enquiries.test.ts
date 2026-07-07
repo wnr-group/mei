@@ -8,9 +8,13 @@ vi.mock("@supabase/supabase-js", () => ({
 
 function makeInsertChain(result: {
   error: null | { message: string; code?: string };
+  data?: { id: string } | null;
 }) {
   const chain: Record<string, ReturnType<typeof vi.fn>> = {};
-  chain.insert = vi.fn().mockResolvedValue(result);
+  const resolved = { data: result.data ?? { id: "enq-test-id" }, error: result.error };
+  chain.insert = vi.fn(() => chain);
+  chain.select = vi.fn(() => chain);
+  chain.single = vi.fn().mockResolvedValue(resolved);
   return chain;
 }
 
@@ -26,7 +30,7 @@ const validInput = {
 beforeEach(() => {
   vi.clearAllMocks();
   process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-role-key";
 });
 
 describe("createEnquiry", () => {

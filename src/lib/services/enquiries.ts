@@ -1,5 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/lib/supabase/database";
+import { createServiceClient } from "@/lib/supabase/service-client";
 
 export interface EnquiryMeasurements {
   bust?: string | null;
@@ -21,18 +20,11 @@ export interface CreateEnquiryInput {
   referenceImages?: string[] | null;
 }
 
-function getServiceClient() {
-  return createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SupabaseClient = any;
 
 export async function createEnquiry(input: CreateEnquiryInput): Promise<string> {
-  const supabase = getServiceClient() as SupabaseClient;
+  const supabase = createServiceClient() as SupabaseClient;
 
   const row: SupabaseClient = {
     name: input.name.trim(),
