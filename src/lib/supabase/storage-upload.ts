@@ -34,9 +34,16 @@ export async function uploadReferenceImages(files: File[], enquiryId: string): P
 
   for (const file of files) {
     const uploadPromise = (async () => {
-      // Generate unique filename with timestamp to avoid collisions
+      // Generate unique filename with timestamp to avoid collisions.
+      // Sanitize the original name — Supabase Storage keys reject spaces, colons,
+      // and other characters common in OS screenshot filenames.
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const fileName = `${timestamp}-${file.name}`;
+      const dotIndex = file.name.lastIndexOf(".");
+      const rawExt = dotIndex >= 0 ? file.name.slice(dotIndex + 1) : "";
+      const rawBase = dotIndex >= 0 ? file.name.slice(0, dotIndex) : file.name;
+      const safeExt = rawExt.toLowerCase().replace(/[^a-z0-9]/g, "");
+      const safeBase = rawBase.replace(/[^a-zA-Z0-9._-]/g, "_").replace(/_+/g, "_").slice(0, 100) || "image";
+      const fileName = `${timestamp}-${safeBase}${safeExt ? `.${safeExt}` : ""}`;
       const filePath = `enquiries/${enquiryId}/${fileName}`;
 
       try {

@@ -31,7 +31,7 @@ function getServiceClient() {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SupabaseClient = any;
 
-export async function createEnquiry(input: CreateEnquiryInput): Promise<void> {
+export async function createEnquiry(input: CreateEnquiryInput): Promise<string> {
   const supabase = getServiceClient() as SupabaseClient;
 
   const row: SupabaseClient = {
@@ -46,10 +46,16 @@ export async function createEnquiry(input: CreateEnquiryInput): Promise<void> {
     status: "NEW",
   };
 
-  const { error } = await supabase.from("enquiries").insert(row) as SupabaseClient;
+  const { data, error } = (await supabase
+    .from("enquiries")
+    .insert(row)
+    .select("id")
+    .single()) as SupabaseClient;
 
   if (error) {
     console.error("[EnquiriesService:createEnquiry]", error);
     throw error;
   }
+
+  return data.id as string;
 }

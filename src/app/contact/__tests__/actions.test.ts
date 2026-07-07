@@ -18,11 +18,14 @@ const validData = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // notifyEnquiry fires a fetch to the Edge Function after a successful insert.
+  // Stub it so tests never hit the network; failures here don't affect the result.
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, text: async () => "" }));
 });
 
 describe("submitEnquiry", () => {
   it("returns success when createEnquiry resolves", async () => {
-    vi.mocked(createEnquiry).mockResolvedValue(undefined);
+    vi.mocked(createEnquiry).mockResolvedValue("enq-123");
 
     const result = await submitEnquiry(validData);
 
@@ -78,7 +81,7 @@ describe("submitEnquiry", () => {
   });
 
   it("forwards measurements to createEnquiry when provided", async () => {
-    vi.mocked(createEnquiry).mockResolvedValue(undefined);
+    vi.mocked(createEnquiry).mockResolvedValue("enq-123");
     const measurements = { bust: "34in", waist: "26in" };
 
     const result = await submitEnquiry({ ...validData, measurements });
@@ -88,7 +91,7 @@ describe("submitEnquiry", () => {
   });
 
   it("forwards referenceImages to createEnquiry when provided", async () => {
-    vi.mocked(createEnquiry).mockResolvedValue(undefined);
+    vi.mocked(createEnquiry).mockResolvedValue("enq-123");
     const referenceImages = ["https://example.com/img1.jpg"];
 
     const result = await submitEnquiry({ ...validData, referenceImages });
