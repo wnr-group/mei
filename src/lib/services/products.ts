@@ -69,9 +69,6 @@ function getServiceClient() {
 const SELECT =
   "*, categories(id, name, slug), product_media(url, sort_order, is_primary, deleted_at)";
 
-const SELECT_INNER_CAT =
-  "*, categories!inner(id, name, slug), product_media(url, sort_order, is_primary, deleted_at)";
-
 // ── Cached inner implementations ───────────────────────────────────────────
 
 const _cachedGetAllProducts = unstable_cache(
