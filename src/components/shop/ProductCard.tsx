@@ -20,6 +20,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const isWishlisted = useWishlistStore((state) => state.isWishlisted(product.id));
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
