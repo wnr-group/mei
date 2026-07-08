@@ -270,13 +270,44 @@ describe("getRelatedProducts", () => {
 });
 
 describe("getProductsByCategory", () => {
-  it("filters products by category slug via inner join", async () => {
-    const chain = makeChain({ data: [fullProductRow], error: null });
-    chain.order = vi.fn().mockResolvedValue({ data: [fullProductRow], error: null });
-    vi.mocked(createClient).mockReturnValue({ from: vi.fn(() => chain) } as unknown as ReturnType<typeof createClient>);
+  it("resolves the category by slug, then filters products via the product_categories join", async () => {
+    const categoryChain = makeChain({ data: { id: "cat1" }, error: null });
+    const productsChain = makeChain({ data: [{ products: fullProductRow }], error: null });
+    productsChain.order = vi.fn().mockResolvedValue({ data: [{ products: fullProductRow }], error: null });
+
+    const fromMock = vi.fn((table: string) => (table === "categories" ? categoryChain : productsChain));
+    vi.mocked(createClient).mockReturnValue({ from: fromMock } as unknown as ReturnType<typeof createClient>);
+
+    const result = await getProductsByCategory("lehengas");
+
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("p1");
+    expect(categoryChain.eq).toHaveBeenCalledWith("slug", "lehengas");
+    expect(productsChain.eq).toHaveBeenCalledWith("category_id", "cat1");
+  });
+
+  it("returns an empty array when the category slug does not resolve", async () => {
+    const categoryChain = makeChain({ data: null, error: null });
+    const fromMock = vi.fn(() => categoryChain);
+    vi.mocked(createClient).mockReturnValue({ from: fromMock } as unknown as ReturnType<typeof createClient>);
+
+    const result = await getProductsByCategory("nonexistent");
+    expect(result).toEqual([]);
+  });
+
+  it("deduplicates a product that has both a manual and a rule row for the same category", async () => {
+    const categoryChain = makeChain({ data: { id: "cat1" }, error: null });
+    // Two product_categories rows for the same product+category (source='manual' and source='rule')
+    // join back to the same product row twice — the service must collapse this to one entry.
+    const duplicateRows = [{ products: fullProductRow }, { products: fullProductRow }];
+    const productsChain = makeChain({ data: duplicateRows, error: null });
+    productsChain.order = vi.fn().mockResolvedValue({ data: duplicateRows, error: null });
+
+    const fromMock = vi.fn((table: string) => (table === "categories" ? categoryChain : productsChain));
+    vi.mocked(createClient).mockReturnValue({ from: fromMock } as unknown as ReturnType<typeof createClient>);
 
     const result = await getProductsByCategory("lehengas");
     expect(result).toHaveLength(1);
-    expect(chain.eq).toHaveBeenCalledWith("categories.slug", "lehengas");
+    expect(result[0].id).toBe("p1");
   });
 });

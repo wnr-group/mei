@@ -113,19 +113,48 @@ export async function getProductsByCategory(
   return unstable_cache(
     async (): Promise<Product[]> => {
       const supabase = getServiceClient();
-      const { data, error } = await supabase
-        .from("products")
-        .select(SELECT_INNER_CAT)
-        .eq("categories.slug", categorySlug)
-        .eq("status", "PUBLISHED")
+
+      const { data: category, error: categoryError } = await supabase
+        .from("categories")
+        .select("id")
+        .eq("slug", categorySlug)
+        .eq("is_active", true)
         .is("deleted_at", null)
-        .order("created_at", { ascending: false });
+        .maybeSingle() as { data: { id: string } | null; error: { message: string } | null };
+
+      if (categoryError) {
+        console.error("[ProductsService:getProductsByCategory]", categoryError);
+        throw categoryError;
+      }
+      if (!category) return [];
+
+      const { data, error } = await supabase
+        .from("product_categories")
+        .select(`products!inner(${SELECT})`)
+        .eq("category_id", category.id)
+        .eq("products.status", "PUBLISHED")
+        .is("products.deleted_at", null)
+        .order("created_at", { ascending: false, referencedTable: "products" });
 
       if (error) {
         console.error("[ProductsService:getProductsByCategory]", error);
         throw error;
       }
-      return (data as ProductWithRelations[]).map(_mapDbRowToProduct);
+
+      // A product can hold both a 'manual' and a 'rule' product_categories row for
+      // this same category (see mei-admin's product_categories UNIQUE(product_id,
+      // category_id, source) constraint) — that joins back to two rows here for one
+      // product. Dedupe by id, keeping the first occurrence so the created_at DESC
+      // ordering from the query is preserved.
+      const seenProductIds = new Set<string>();
+      const products: Product[] = [];
+      for (const row of data as unknown as { products: ProductWithRelations }[]) {
+        const mapped = _mapDbRowToProduct(row.products);
+        if (seenProductIds.has(mapped.id)) continue;
+        seenProductIds.add(mapped.id);
+        products.push(mapped);
+      }
+      return products;
     },
     ["products-by-category", categorySlug],
     { tags: ["products"], revalidate: 60 }
