@@ -35,9 +35,9 @@ export async function getShippingQuote(state: string): Promise<ShippingQuote> {
   }
 
   return {
-    charge: rate?.charge ?? null,
-    freeShippingEnabled: settings?.free_shipping_enabled ?? false,
-    freeShippingThreshold: settings?.free_shipping_threshold ?? null,
+    charge: (rate as Database['public']['Tables']['shipping_rates']['Row'] | null)?.charge ?? null,
+    freeShippingEnabled: (settings as Database['public']['Tables']['shipping_settings']['Row'] | null)?.free_shipping_enabled ?? false,
+    freeShippingThreshold: (settings as Database['public']['Tables']['shipping_settings']['Row'] | null)?.free_shipping_threshold ?? null,
   };
 }
 
