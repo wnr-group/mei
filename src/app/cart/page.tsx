@@ -192,6 +192,15 @@ export default function CartPage() {
                 </span>
               </div>
 
+              <div className="flex items-start gap-2 bg-[#faf7f2] border border-[#e8e0d5] px-4 py-3">
+                <svg className="w-4 h-4 mt-0.5 shrink-0 text-[#c9a465]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-xs text-[#6b6b6b] font-inter leading-relaxed">
+                  <span className="font-semibold text-[#1a1a1a]">Delivery in 15 days.</span> All pieces are made-to-order and will be dispatched within 15 working days from the date of purchase.
+                </p>
+              </div>
+
               <div className="space-y-3 pt-2">
                 <Link
                   href="/checkout"
