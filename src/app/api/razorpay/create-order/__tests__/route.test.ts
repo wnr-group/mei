@@ -6,7 +6,13 @@ vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn(),
 }));
 
+vi.mock("@/lib/services/shipping", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/services/shipping")>();
+  return { ...actual, getShippingQuote: vi.fn() };
+});
+
 import { createClient } from "@supabase/supabase-js";
+import { getShippingQuote } from "@/lib/services/shipping";
 
 function makeRequest(body: unknown) {
   return new NextRequest("http://localhost/api/razorpay/create-order", {
@@ -38,11 +44,23 @@ describe("POST /api/razorpay/create-order", () => {
     expect(await res.json()).toEqual({ error: "EMPTY_CART" });
   });
 
+  it("returns 400 with STATE_REQUIRED when state is missing", async () => {
+    const res = await POST(makeRequest({ items: [{ product_id: "p1", quantity: 1 }] }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "STATE_REQUIRED" });
+  });
+
+  it("returns 400 with STATE_REQUIRED when state is not a string (type confusion payload)", async () => {
+    const res = await POST(makeRequest({ items: [{ product_id: "p1", quantity: 1 }], state: { malicious: true } }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "STATE_REQUIRED" });
+  });
+
   it("returns 500 with PRODUCT_LOOKUP_FAILED when Supabase query errors", async () => {
     vi.mocked(createClient).mockReturnValue(
       makeSupabaseClient({ data: null, error: { message: "db error" } }) as unknown as ReturnType<typeof createClient>
     );
-    const res = await POST(makeRequest({ items: [{ product_id: "p1", quantity: 1 }] }));
+    const res = await POST(makeRequest({ items: [{ product_id: "p1", quantity: 1 }], state: "Tamil Nadu" }));
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: "PRODUCT_LOOKUP_FAILED" });
   });
@@ -51,9 +69,56 @@ describe("POST /api/razorpay/create-order", () => {
     vi.mocked(createClient).mockReturnValue(
       makeSupabaseClient({ data: [], error: null }) as unknown as ReturnType<typeof createClient>
     );
-    const res = await POST(makeRequest({ items: [{ product_id: "unknown", quantity: 1 }] }));
+    const res = await POST(makeRequest({ items: [{ product_id: "unknown", quantity: 1 }], state: "Tamil Nadu" }));
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "PRODUCT_NOT_FOUND" });
+  });
+
+  it("returns 400 with SHIPPING_STATE_NOT_CONFIGURED when the state has no rate", async () => {
+    vi.mocked(createClient).mockReturnValue(
+      makeSupabaseClient({ data: [{ id: "p1", price: 1000 }], error: null }) as unknown as ReturnType<typeof createClient>
+    );
+    vi.mocked(getShippingQuote).mockResolvedValue({ charge: null, freeShippingEnabled: false, freeShippingThreshold: null });
+    const res = await POST(makeRequest({ items: [{ product_id: "p1", quantity: 1 }], state: "Nonexistent State" }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "SHIPPING_STATE_NOT_CONFIGURED" });
+  });
+
+  it("returns 400 with INVALID_QUANTITY for a negative quantity", async () => {
+    vi.mocked(createClient).mockReturnValue(
+      makeSupabaseClient({ data: [{ id: "p1", price: 1000 }], error: null }) as unknown as ReturnType<typeof createClient>
+    );
+    const res = await POST(makeRequest({ items: [{ product_id: "p1", quantity: -1 }], state: "Tamil Nadu" }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "INVALID_QUANTITY", product_id: "p1" });
+  });
+
+  it("returns 400 with INVALID_QUANTITY for a zero quantity", async () => {
+    vi.mocked(createClient).mockReturnValue(
+      makeSupabaseClient({ data: [{ id: "p1", price: 1000 }], error: null }) as unknown as ReturnType<typeof createClient>
+    );
+    const res = await POST(makeRequest({ items: [{ product_id: "p1", quantity: 0 }], state: "Tamil Nadu" }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "INVALID_QUANTITY", product_id: "p1" });
+  });
+
+  it("returns 400 with INVALID_QUANTITY for a non-integer quantity", async () => {
+    vi.mocked(createClient).mockReturnValue(
+      makeSupabaseClient({ data: [{ id: "p1", price: 1000 }], error: null }) as unknown as ReturnType<typeof createClient>
+    );
+    const res = await POST(makeRequest({ items: [{ product_id: "p1", quantity: 1.5 }], state: "Tamil Nadu" }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "INVALID_QUANTITY", product_id: "p1" });
+  });
+
+  it("returns 502 with SHIPPING_LOOKUP_FAILED when getShippingQuote throws", async () => {
+    vi.mocked(createClient).mockReturnValue(
+      makeSupabaseClient({ data: [{ id: "p1", price: 1000 }], error: null }) as unknown as ReturnType<typeof createClient>
+    );
+    vi.mocked(getShippingQuote).mockRejectedValue(new Error("SHIPPING_RATE_LOOKUP_FAILED: connection timeout"));
+    const res = await POST(makeRequest({ items: [{ product_id: "p1", quantity: 1 }], state: "Tamil Nadu" }));
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({ error: "SHIPPING_LOOKUP_FAILED" });
   });
 
   it("returns bypass order when NEXT_PUBLIC_ENABLE_PAYMENT_BYPASS is true", async () => {
@@ -77,11 +142,12 @@ describe("POST /api/razorpay/create-order", () => {
     vi.mocked(createClient).mockReturnValue(
       makeSupabaseClient({ data: [{ id: "p1", price: 1000 }], error: null }) as unknown as ReturnType<typeof createClient>
     );
+    vi.mocked(getShippingQuote).mockResolvedValue({ charge: 300, freeShippingEnabled: false, freeShippingThreshold: null });
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       text: async () => "Unauthorized",
     } as unknown as Response);
-    const res = await POST(makeRequest({ items: [{ product_id: "p1", quantity: 1 }] }));
+    const res = await POST(makeRequest({ items: [{ product_id: "p1", quantity: 1 }], state: "Tamil Nadu" }));
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({ error: "RAZORPAY_ORDER_FAILED" });
   });
@@ -93,11 +159,12 @@ describe("POST /api/razorpay/create-order", () => {
     vi.mocked(createClient).mockReturnValue(
       makeSupabaseClient({ data: [{ id: "p1", price: 1000 }], error: null }) as unknown as ReturnType<typeof createClient>
     );
+    vi.mocked(getShippingQuote).mockResolvedValue({ charge: 300, freeShippingEnabled: false, freeShippingThreshold: null });
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ id: "order_abc123", amount: 100000, currency: "INR" }),
     } as unknown as Response);
-    const res = await POST(makeRequest({ items: [{ product_id: "p1", quantity: 1 }] }));
+    const res = await POST(makeRequest({ items: [{ product_id: "p1", quantity: 1 }], state: "Tamil Nadu" }));
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.razorpay_order_id).toBe("order_abc123");

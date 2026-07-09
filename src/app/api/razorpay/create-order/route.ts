@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getShippingQuote, resolveShippingCharge } from "@/lib/services/shipping";
 
 function anonClient() {
   return createClient(
@@ -20,7 +21,8 @@ export async function POST(req: NextRequest) {
     // ── Bypass mode (local dev only) ────────────────────────────────────────
     // Short-circuit BEFORE the DB lookup so an empty local Supabase doesn't
     // block development. Uses client-supplied prices — acceptable because this
-    // path is only active when NEXT_PUBLIC_ENABLE_PAYMENT_BYPASS=true.
+    // path is only active when NEXT_PUBLIC_ENABLE_PAYMENT_BYPASS=true. Still
+    // flat-rate/threshold shipping — bypass mode has no state-aware DB to read.
     if (process.env.NEXT_PUBLIC_ENABLE_PAYMENT_BYPASS === "true") {
       const bypassSubtotal = items.reduce(
         (sum, i) => sum + (i.unit_price ?? 0) * i.quantity,
@@ -37,8 +39,13 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ── Production path: server-side price verification ─────────────────────
-    // Client-supplied prices are NEVER trusted here.
+    // ── Production path: server-side price + shipping verification ──────────
+    // Client-supplied prices and shipping are NEVER trusted here.
+    const state: unknown = body.state;
+    if (typeof state !== "string" || !state.trim()) {
+      return NextResponse.json({ error: "STATE_REQUIRED" }, { status: 400 });
+    }
+
     const { data: products, error } = await anonClient()
       .from("products")
       .select("id, price")
@@ -57,11 +64,32 @@ export async function POST(req: NextRequest) {
       if (price == null) {
         return NextResponse.json({ error: "PRODUCT_NOT_FOUND" }, { status: 400 });
       }
+      // Reject non-positive quantity — otherwise a crafted negative quantity
+      // subtracts from subtotal (or a zero quantity contributes nothing while
+      // still occupying a line item), letting a client manipulate the charged
+      // amount. Mirrors the equivalent guard added to create_order_txn.
+      if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+        return NextResponse.json({ error: "INVALID_QUANTITY", product_id: item.product_id }, { status: 400 });
+      }
       subtotal += price * item.quantity;
     }
 
-    // Shipping threshold — mirrors src/lib/config/shipping.ts
-    const shipping = subtotal >= 5000 ? 0 : 150;
+    // State-wise shipping — re-derived from shipping_rates/shipping_settings,
+    // the same tables the admin edits. A missing rate fails the request rather
+    // than guessing a price. getShippingQuote can throw on a genuine DB error
+    // (Task 3) — that's distinguished here from "state not configured".
+    let quote;
+    try {
+      quote = await getShippingQuote(state);
+    } catch (lookupErr) {
+      console.error("[razorpay/create-order] shipping lookup failed", lookupErr);
+      return NextResponse.json({ error: "SHIPPING_LOOKUP_FAILED" }, { status: 502 });
+    }
+    const shipping = resolveShippingCharge(subtotal, quote);
+    if (shipping === null) {
+      return NextResponse.json({ error: "SHIPPING_STATE_NOT_CONFIGURED" }, { status: 400 });
+    }
+
     const total = subtotal + shipping;
     const amountPaise = Math.round(total * 100);
 
