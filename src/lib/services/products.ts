@@ -7,13 +7,20 @@ import type { Product } from "@/types";
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 type CategoryRow = Database["public"]["Tables"]["categories"]["Row"];
 type ProductMediaRow = Database["public"]["Tables"]["product_media"]["Row"];
+type ProductColorRow = Database["public"]["Tables"]["product_colors"]["Row"];
 
 type ProductWithRelations = ProductRow & {
   categories: Pick<CategoryRow, "id" | "name" | "slug"> | null;
   product_media:
     | Pick<
         ProductMediaRow,
-        "url" | "sort_order" | "is_primary" | "deleted_at"
+        "url" | "color_id" | "sort_order" | "is_primary" | "deleted_at"
+      >[]
+    | undefined;
+  product_colors:
+    | Pick<
+        ProductColorRow,
+        "id" | "label" | "hex_code" | "swatch_image_url" | "sort_order" | "deleted_at"
       >[]
     | undefined;
 };
@@ -39,6 +46,22 @@ export function _mapDbRowToProduct(row: ProductWithRelations): Product {
       ? [row.image_url]
       : [];
 
+  const coloredMedia = activeMedia.map((m) => ({
+    url: m.url,
+    color_id: m.color_id,
+  }));
+
+  const colors = (row.product_colors ?? [])
+    .filter((c) => c.deleted_at === null)
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((c) => ({
+      id: c.id,
+      label: c.label,
+      hex_code: c.hex_code,
+      swatch_image_url: c.swatch_image_url,
+      sort_order: c.sort_order,
+    }));
+
   return {
     id: row.id,
     name: row.name,
@@ -52,6 +75,8 @@ export function _mapDbRowToProduct(row: ProductWithRelations): Product {
     category: row.categories ?? null,
     image_url: row.image_url,
     images,
+    colors,
+    coloredMedia,
   };
 }
 
@@ -67,10 +92,10 @@ function getServiceClient() {
 // ── Query select clause ────────────────────────────────────────────────────
 
 const SELECT =
-  "*, categories(id, name, slug), product_media(url, sort_order, is_primary, deleted_at)";
+  "*, categories(id, name, slug), product_media(url, color_id, sort_order, is_primary, deleted_at), product_colors(id, label, hex_code, swatch_image_url, sort_order, deleted_at)";
 
 const SELECT_INNER_CAT =
-  "*, categories!inner(id, name, slug), product_media(url, sort_order, is_primary, deleted_at)";
+  "*, categories!inner(id, name, slug), product_media(url, color_id, sort_order, is_primary, deleted_at), product_colors(id, label, hex_code, swatch_image_url, sort_order, deleted_at)";
 
 // ── Cached inner implementations ───────────────────────────────────────────
 
