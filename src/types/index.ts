@@ -18,6 +18,14 @@ export type EnquiryStatus = Database["public"]["Enums"]["enquiry_status"];
 
 // ── Storefront view-model types (what pages and components receive) ───────────
 
+export type StorefrontColor = {
+  id: string;
+  label: string;
+  hex_code: string | null;
+  swatch_image_url: string | null;
+  sort_order: number;
+};
+
 export type Category = {
   id: string;
   name: string;
@@ -42,6 +50,8 @@ export type Product = {
   category: Pick<Category, "id" | "name" | "slug"> | null;  // was: categoryName
   image_url: string | null;           // primary image fallback from products table
   images: string[];                   // urls from product_media, sorted by sort_order
+  colors: StorefrontColor[];           // color palette with swatches
+  coloredMedia: { url: string; color_id: string | null }[];  // media with color associations
   // REMOVED: inStock (no DB equivalent — MEI is enquiry-based)
 };
 
