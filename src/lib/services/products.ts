@@ -46,10 +46,15 @@ export function _mapDbRowToProduct(row: ProductWithRelations): Product {
       ? [row.image_url]
       : [];
 
-  const coloredMedia = activeMedia.map((m) => ({
-    url: m.url,
-    color_id: m.color_id,
-  }));
+  const coloredMedia =
+    activeMedia.length > 0
+      ? activeMedia.map((m) => ({
+          url: m.url,
+          color_id: m.color_id,
+        }))
+      : row.image_url
+      ? [{ url: row.image_url, color_id: null }]
+      : [];
 
   const colors = (row.product_colors ?? [])
     .filter((c) => c.deleted_at === null)

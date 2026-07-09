@@ -49,7 +49,7 @@ export default function ImageGallery({
   const displayImages = visibleImages.length > 0 ? visibleImages : allImages;
   const safeIndex = activeIndex < displayImages.length ? activeIndex : 0;
 
-  const hasColors = colors && colors.length > 0;
+  const hasColors = colors && colors.length > 0 && coloredMedia && coloredMedia.length > 0;
 
   function handleColorClick(colorId: string | null) {
     setActiveColorId(colorId);
