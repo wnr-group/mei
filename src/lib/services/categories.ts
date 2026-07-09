@@ -55,28 +55,38 @@ const _cachedGetCategories = unstable_cache(
 // ── Public service functions ───────────────────────────────────────────────
 
 export async function getCategories(): Promise<Category[]> {
-  return _cachedGetCategories();
+  try {
+    return await _cachedGetCategories();
+  } catch (err) {
+    console.error("[CategoriesService:getCategories] falling back due to error:", err);
+    return [];
+  }
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
-  return unstable_cache(
-    async (): Promise<Category | null> => {
-      const supabase = getServiceClient();
-      const { data, error } = await supabase
-        .from("categories")
-        .select("*")
-        .eq("slug", slug)
-        .eq("is_active", true)
-        .is("deleted_at", null)
-        .maybeSingle();
+  try {
+    return await unstable_cache(
+      async (): Promise<Category | null> => {
+        const supabase = getServiceClient();
+        const { data, error } = await supabase
+          .from("categories")
+          .select("*")
+          .eq("slug", slug)
+          .eq("is_active", true)
+          .is("deleted_at", null)
+          .maybeSingle();
 
-      if (error) {
-        console.error("[CategoriesService:getCategoryBySlug]", error);
-        throw error;
-      }
-      return data ? _mapDbRowToCategory(data as CategoryRow) : null;
-    },
-    ["category-by-slug", slug],
-    { tags: ["categories"], revalidate: 60 }
-  )();
+        if (error) {
+          console.error("[CategoriesService:getCategoryBySlug]", error);
+          throw error;
+        }
+        return data ? _mapDbRowToCategory(data as CategoryRow) : null;
+      },
+      ["category-by-slug", slug],
+      { tags: ["categories"], revalidate: 60 }
+    )();
+  } catch (err) {
+    console.error("[CategoriesService:getCategoryBySlug] falling back due to error:", err);
+    return null;
+  }
 }

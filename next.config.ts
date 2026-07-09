@@ -15,6 +15,8 @@ if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
   }
 }
 
+// next.config.ts
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -26,6 +28,18 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'rmkv.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'encrypted-tbn3.gstatic.com',
         port: '',
         pathname: '/**',
       },
