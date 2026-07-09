@@ -200,7 +200,7 @@ export default function CheckoutPage() {
           clearCart();
           setOrderId(result.orderNumber);
           setOrderUuid(result.orderId);
-        } catch (_err) {
+        } catch {
           setPaymentError("Order creation failed. Please try again.");
         } finally {
           setIsSubmitting(false);
@@ -262,7 +262,7 @@ export default function CheckoutPage() {
             clearCart();
             setOrderId(result.orderNumber);
             setOrderUuid(result.orderId);
-          } catch (_err) {
+          } catch {
             setPaymentError(
               `Payment received but order creation failed. ` +
                 `Please contact support with payment reference: ` +
@@ -284,7 +284,7 @@ export default function CheckoutPage() {
       });
 
       razorpay.open();
-    } catch (_err) {
+    } catch {
       setPaymentError("Unable to initiate payment. Please try again.");
       setIsSubmitting(false);
     }
