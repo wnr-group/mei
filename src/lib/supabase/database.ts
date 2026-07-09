@@ -101,6 +101,16 @@ export type Database = {
         Insert: { id?: string; admin_id?: string | null; action: string; resource_type: string; resource_id?: string | null; old_data?: Record<string, unknown> | null; new_data?: Record<string, unknown> | null; user_agent?: string | null; session_id?: string | null }
         Update: never
       }
+      shipping_rates: {
+        Row: { id: string; state: string; charge: number; updated_at: string }
+        Insert: { id?: string; state: string; charge: number }
+        Update: { charge?: number }
+      }
+      shipping_settings: {
+        Row: { id: number; free_shipping_enabled: boolean; free_shipping_threshold: number | null; updated_at: string }
+        Insert: never
+        Update: { free_shipping_enabled?: boolean; free_shipping_threshold?: number | null }
+      }
     }
     Enums: {
       admin_role: 'admin' | 'super_admin'
