@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/cart";
-import { calculateShipping } from "@/lib/config/shipping";
+// Shipping is state-dependent — resolved via /api/shipping/rate at checkout.
 import { formatCurrency } from "@/lib/utils/format";
 
 const isSupabaseUrl = (url?: string | null) => {
@@ -23,9 +23,6 @@ export default function OrderSummary() {
   if (!mounted) return null;
 
   const subtotalVal = total();
-  const shipping = calculateShipping(subtotalVal);
-  const estimatedTax = subtotalVal * 0.12; // 12% GST standard for luxury apparel in India
-  const grandTotal = subtotalVal + shipping + estimatedTax;
 
   return (
     <div className="bg-[#faf8f5] border border-[#e8e0d5] p-6 space-y-6 font-inter">
@@ -73,20 +70,8 @@ export default function OrderSummary() {
 
       <div className="space-y-2 text-xs">
         <div className="flex justify-between text-[#4a4a4a]">
-          <span>Subtotal</span>
-          <span>{formatCurrency(subtotalVal)}</span>
-        </div>
-        <div className="flex justify-between text-[#4a4a4a]">
-          <span>Estimated GST (12%)</span>
-          <span>{formatCurrency(estimatedTax)}</span>
-        </div>
-        <div className="flex justify-between text-[#4a4a4a]">
           <span>Shipping</span>
-          {shipping === 0 ? (
-            <span className="text-[#c9a465] font-medium uppercase tracking-wider">Free</span>
-          ) : (
-            <span className="font-medium text-[#1a1a1a]">{formatCurrency(shipping)}</span>
-          )}
+          <span className="text-[#9a9a9a] text-xs">Calculated at checkout</span>
         </div>
       </div>
 
@@ -94,10 +79,10 @@ export default function OrderSummary() {
 
       <div className="flex justify-between items-baseline">
         <span className="text-xs font-semibold uppercase tracking-widest text-[#1a1a1a]">
-          Total
+          Subtotal
         </span>
         <span className="text-lg font-light text-[#1a1a1a]">
-          {formatCurrency(grandTotal)}
+          {formatCurrency(subtotalVal)}
         </span>
       </div>
     </div>

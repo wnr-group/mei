@@ -2,22 +2,38 @@
 
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/cart";
-import {
-  FREE_SHIPPING_THRESHOLD,
-  getRemainingForFreeShipping,
-} from "@/lib/config/shipping";
+// FREE_SHIPPING_THRESHOLD is used as a loading-state fallback only.
+// The live threshold is fetched from /api/shipping/settings (which reads
+// the shipping_settings table) so Admin changes are reflected here.
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/config/shipping";
 import { formatCurrency } from "@/lib/utils/format";
 
 export default function PromoStrip({ defaultText }: { defaultText?: string }) {
   const total = useCartStore((state) => state.total);
   const [mounted, setMounted] = useState(false);
+  const [threshold, setThreshold] = useState<number>(FREE_SHIPPING_THRESHOLD);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
+    // Fetch live threshold from DB — falls back to hardcoded constant if unavailable
+    fetch("/api/shipping/settings")
+      .then((r) => r.json())
+      .then((data) => {
+        if (
+          data.freeShippingEnabled &&
+          typeof data.freeShippingThreshold === "number"
+        ) {
+          setThreshold(data.freeShippingThreshold);
+        }
+      })
+      .catch(() => {
+        // Silently retain hardcoded fallback — promo strip is display-only
+      });
   }, []);
 
-  const defaultMessage = defaultText ?? `Free Shipping on orders above ${formatCurrency(FREE_SHIPPING_THRESHOLD)}`;
+  const defaultMessage =
+    defaultText ?? `Free Shipping on orders above ${formatCurrency(threshold)}`;
 
   if (!mounted) {
     return (
@@ -28,7 +44,7 @@ export default function PromoStrip({ defaultText }: { defaultText?: string }) {
   }
 
   const subtotal = total();
-  const remaining = getRemainingForFreeShipping(subtotal);
+  const remaining = Math.max(threshold - subtotal, 0);
 
   let message: string;
   if (subtotal === 0) {
