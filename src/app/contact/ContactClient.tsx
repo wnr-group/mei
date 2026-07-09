@@ -44,6 +44,7 @@ export default function ContactClient() {
     previewUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
     const newUrls = imageFiles.map(f => URL.createObjectURL(f));
     previewUrlsRef.current = newUrls;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setImagePreviews(newUrls);
     return () => {
       newUrls.forEach(url => URL.revokeObjectURL(url));
