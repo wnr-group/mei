@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Product } from "@/types";
@@ -14,7 +13,7 @@ const isSupabaseUrl = (url?: string | null) => {
 };
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
+
 
   // Format price helper
   const formatPrice = (price: number) => {

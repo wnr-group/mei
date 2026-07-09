@@ -30,7 +30,7 @@ const isSupabaseUrl = (url?: string | null) => {
 export default async function Home() {
   const [categories, products,banners] = await Promise.all([
     getCategories(),
-    getProducts({ limit: 8 }),
+    getProducts({ limit: 8, isFeatured: true }),
     getBanners()
   ]);
 

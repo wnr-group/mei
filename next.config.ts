@@ -17,6 +17,7 @@ if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
 
 const nextConfig: NextConfig = {
   images: {
+    unoptimized: process.env.NODE_ENV === "development",
     remotePatterns: [
       {
         protocol: supabaseProtocol,
@@ -24,10 +25,10 @@ const nextConfig: NextConfig = {
         port: supabasePort || undefined,
       },
       {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        port: '',
-        pathname: '/**',
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        port: "",
+        pathname: "/**",
       },
     ],
   },

@@ -36,6 +36,12 @@ const baseRow = (o: Record<string, unknown> = {}) => ({
   deleted_at: null,
   categories: { id: "cat1", name: "Lehengas", slug: "lehengas" },
   product_media: [] as ReturnType<typeof baseMedia>[],
+  is_featured: false,
+  is_new_arrival: false,
+  product_code: "MEI-TEST1",
+  has_variants: false,
+  size_system_id: null,
+  supported_customization_types: [] as ("UNSTITCHED" | "SEMI_STITCHED" | "STANDARD_SIZE" | "CUSTOM_TAILORED")[],
   ...o,
 });
 

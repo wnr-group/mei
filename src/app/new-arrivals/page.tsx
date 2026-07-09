@@ -2,8 +2,29 @@ import { getProducts } from "@/lib/services/products";
 import ProductCard from "@/components/shop/ProductCard";
 import Link from "next/link";
 
-export default async function NewArrivalsPage() {
-  const newArrivals = await getProducts({ limit: 4 });
+interface NewArrivalsPageProps {
+  searchParams: Promise<{ page?: string }> | { page?: string };
+}
+
+export default async function NewArrivalsPage({ searchParams }: NewArrivalsPageProps) {
+  const resolvedParams = await searchParams;
+  const currentPage = Number(resolvedParams.page) || 1;
+  const limit = 12;
+
+  // 1. Fetch paginated products for the current page
+  const newArrivals = await getProducts({
+    limit,
+    page: currentPage,
+    isNewArrival: true,
+  });
+
+  // 2. Fetch all new arrivals to determine total pages
+  const allNewArrivals = await getProducts({
+    isNewArrival: true,
+  });
+
+  const totalProducts = allNewArrivals.length;
+  const totalPages = Math.ceil(totalProducts / limit);
 
   return (
     <main className="flex-1 bg-white min-h-screen">
@@ -25,12 +46,47 @@ export default async function NewArrivalsPage() {
 
       {/* Products Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {newArrivals.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {newArrivals.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {newArrivals.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20 text-sm text-[#4a4a4a] font-inter font-light">
+            No new arrivals found at the moment.
+          </div>
+        )}
       </section>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <section className="flex justify-center items-center space-x-6 pb-20 font-inter">
+          <Link
+            href={`/new-arrivals?page=${currentPage - 1}`}
+            className={`px-4 py-2 border border-[#1a1a1a] text-xs font-semibold uppercase tracking-wider transition-colors duration-300 ${
+              currentPage <= 1
+                ? "opacity-30 cursor-not-allowed pointer-events-none"
+                : "hover:bg-[#1a1a1a] hover:text-white"
+            }`}
+          >
+            Prev
+          </Link>
+          <span className="text-xs uppercase tracking-widest text-[#4a4a4a] select-none">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Link
+            href={`/new-arrivals?page=${currentPage + 1}`}
+            className={`px-4 py-2 border border-[#1a1a1a] text-xs font-semibold uppercase tracking-wider transition-colors duration-300 ${
+              currentPage >= totalPages
+                ? "opacity-30 cursor-not-allowed pointer-events-none"
+                : "hover:bg-[#1a1a1a] hover:text-white"
+            }`}
+          >
+            Next
+          </Link>
+        </section>
+      )}
 
       {/* Editorial Strip */}
       <section className="border-t border-b border-[#e8e0d5]/40 bg-[#faf8f5] py-20">

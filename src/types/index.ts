@@ -34,16 +34,18 @@ export type Product = {
   name: string;
   slug: string;
   price: number;
-  short_description: string | null;   // was: shortDescription
+  short_description: string | null; // was: shortDescription
   description: string | null;
-  work_types: string[];               // was: craftType: string
+  work_types: string[]; // was: craftType: string
   status: ProductStatus;
-  category_id: string | null;         // was: categoryId
-  category: Pick<Category, "id" | "name" | "slug"> | null;  // was: categoryName
-  image_url: string | null;           // primary image fallback from products table
-  images: string[];                   // urls from product_media, sorted by sort_order
-  // REMOVED: inStock (no DB equivalent — MEI is enquiry-based)
+  category_id: string | null; // was: categoryId
+  category: Pick<Category, "id" | "name" | "slug"> | null; // was: categoryName
+  image_url: string | null; // primary image fallback from products table
+  images: string[]; // urls from product_media, sorted by sort_order
+  is_featured?: boolean;
+  is_new_arrival?: boolean;
 };
+
 
 export type OrderItem = {
   id: string;

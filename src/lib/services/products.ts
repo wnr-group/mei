@@ -23,6 +23,9 @@ type ProductWithRelations = ProductRow & {
 export interface GetProductsOptions {
   categorySlug?: string;
   limit?: number;
+  isNewArrival?: boolean;
+  isFeatured?: boolean;
+  page?: number;
 }
 
 // ── Mapper ─────────────────────────────────────────────────────────────────
@@ -52,6 +55,8 @@ export function _mapDbRowToProduct(row: ProductWithRelations): Product {
     category: row.categories ?? null,
     image_url: row.image_url,
     images,
+    is_featured: row.is_featured,
+    is_new_arrival: row.is_new_arrival,
   };
 }
 
@@ -99,12 +104,29 @@ const _cachedGetAllProducts = unstable_cache(
 export async function getProducts(
   options: GetProductsOptions = {}
 ): Promise<Product[]> {
+  let products: Product[];
   if (options.categorySlug) {
-    const products = await getProductsByCategory(options.categorySlug);
-    return options.limit ? products.slice(0, options.limit) : products;
+    products = await getProductsByCategory(options.categorySlug);
+  } else {
+    products = await _cachedGetAllProducts();
   }
-  const products = await _cachedGetAllProducts();
-  return options.limit ? products.slice(0, options.limit) : products;
+
+  if (options.isNewArrival) {
+    products = products.filter((p) => p.is_new_arrival);
+  }
+  if (options.isFeatured) {
+    products = products.filter((p) => p.is_featured);
+  }
+
+  if (options.limit !== undefined || options.page !== undefined) {
+    const pageNum = options.page || 1;
+    const limitNum = options.limit || 12;
+    const startIndex = (pageNum - 1) * limitNum;
+    const endIndex = startIndex + limitNum;
+    return products.slice(startIndex, endIndex);
+  }
+
+  return products;
 }
 
 export async function getProductsByCategory(

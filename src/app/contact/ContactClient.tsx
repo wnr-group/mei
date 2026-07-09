@@ -40,15 +40,17 @@ export default function ContactClient() {
   const [imageError, setImageError] = useState<string | null>(null);
   const previewUrlsRef = useRef<string[]>([]);
 
+  // Keep ref in sync with previews for unmount cleanup
   useEffect(() => {
-    previewUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
-    const newUrls = imageFiles.map(f => URL.createObjectURL(f));
-    previewUrlsRef.current = newUrls;
-    setImagePreviews(newUrls);
+    previewUrlsRef.current = imagePreviews;
+  }, [imagePreviews]);
+
+  // Clean up all object URLs on unmount
+  useEffect(() => {
     return () => {
-      newUrls.forEach(url => URL.revokeObjectURL(url));
+      previewUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
     };
-  }, [imageFiles]);
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const incoming = Array.from(e.target.files ?? []);
@@ -87,12 +89,20 @@ export default function ContactClient() {
       return;
     }
 
+    const newUrls = unique.map(f => URL.createObjectURL(f));
+    setImagePreviews(prev => [...prev, ...newUrls]);
     setImageFiles(combined);
   };
 
   const removeImage = (index: number) => {
     setImageError(null);
     setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => {
+      if (prev[index]) {
+        URL.revokeObjectURL(prev[index]);
+      }
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -174,6 +184,8 @@ export default function ContactClient() {
     if (result.success) {
       setFormData({ name: "", email: "", phone: "", occasion: "", budget: "", message: "" });
       setMeasurements({ bust: "", waist: "", hip: "", shoulder: "", length: "", sleeve: "" });
+      imagePreviews.forEach(url => URL.revokeObjectURL(url));
+      setImagePreviews([]);
       setImageFiles([]);
       setImageError(null);
       setSubmitError(null);
