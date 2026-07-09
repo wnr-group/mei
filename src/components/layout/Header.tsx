@@ -85,7 +85,8 @@ export default function Header({ products, categories }: { products: Product[]; 
               </button>
 
               {/* Wishlist Button */}
-              <button
+              <Link
+                href="/wishlist"
                 className="relative text-[#1a1a1a] hover:text-[#c9a465] transition-colors duration-300 cursor-pointer"
                 aria-label="Wishlist"
               >
@@ -108,7 +109,7 @@ export default function Header({ products, categories }: { products: Product[]; 
                     {wishlistItems.length}
                   </span>
                 )}
-              </button>
+              </Link>
 
               {/* Cart Button */}
               <Link
