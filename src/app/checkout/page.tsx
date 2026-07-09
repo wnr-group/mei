@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCartStore } from "@/store/cart";
-import { calculateShipping } from "@/lib/config/shipping";
+import { INDIAN_STATES } from "@/lib/config/india-states";
 import { formatCurrency } from "@/lib/utils/format";
 import { createOrder } from "@/lib/services/orders";
 
@@ -103,7 +103,45 @@ export default function CheckoutPage() {
     document.body.appendChild(script);
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [shipping, setShipping] = useState<number | null>(null);
+  const [shippingLoading, setShippingLoading] = useState(true);
+  const [shippingFetchFailed, setShippingFetchFailed] = useState(false);
+  const [shippingFetchNonce, setShippingFetchNonce] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setShippingLoading(true);
+    setShippingFetchFailed(false);
+    const subtotalVal = total();
+    fetch(`/api/shipping/rate?state=${encodeURIComponent(formData.state)}&subtotal=${subtotalVal}`)
+      .then(async (res) => {
+        // A non-2xx (e.g. 500 SHIPPING_LOOKUP_FAILED) means the lookup itself
+        // failed — that must not be conflated with "this state has no
+        // configured rate", which is a normal 200 response with shipping: null.
+        if (!res.ok) throw new Error("shipping lookup failed");
+        return res.json();
+      })
+      .then((data) => {
+        if (!cancelled) {
+          setShipping(typeof data.shipping === "number" ? data.shipping : null);
+          setShippingLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setShipping(null);
+          setShippingFetchFailed(true);
+          setShippingLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.state, shippingFetchNonce]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
     if (errors[id]) {
@@ -156,6 +194,7 @@ export default function CheckoutPage() {
             quantity: item.quantity,
             unit_price: item.price, // used by bypass mode only; server ignores in production
           })),
+          state: formData.state,
         }),
       });
 
@@ -351,8 +390,7 @@ export default function CheckoutPage() {
   }
 
   const subtotalVal = total();
-  const shipping = calculateShipping(subtotalVal);
-  const grandTotal = subtotalVal + shipping;
+  const grandTotal = subtotalVal + (shipping ?? 0);
 
   return (
     <main className="flex-1 bg-white py-16">
@@ -443,14 +481,23 @@ export default function CheckoutPage() {
                     onChange={handleChange}
                     error={errors.city}
                   />
-                  <FormField
-                    id="state"
-                    label="State"
-                    placeholder="Maharashtra"
-                    value={formData.state}
-                    onChange={handleChange}
-                    error={errors.state}
-                  />
+                  <div className="w-full space-y-1">
+                    <label htmlFor="state" className="block text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a]">
+                      State
+                    </label>
+                    <select
+                      id="state"
+                      value={formData.state}
+                      onChange={handleChange}
+                      className={`w-full bg-transparent border-b pb-2 pt-1 text-sm font-inter text-[#1a1a1a] focus:outline-none focus:border-[#c9a465] transition-all duration-300 rounded-none outline-none ${errors.state ? "border-red-500 focus:border-red-500" : "border-[#e8e0d5]"
+                        }`}
+                    >
+                      {INDIAN_STATES.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                    {errors.state && <p className="text-xs text-red-500 font-inter mt-0.5">{errors.state}</p>}
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <FormField
@@ -529,7 +576,22 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between text-[#4a4a4a] font-medium">
                 <span className="uppercase text-xs tracking-widest font-bold">Shipping</span>
-                {shipping === 0 ? (
+                {shippingLoading ? (
+                  <span className="text-[#9a9a9a] text-xs">Calculating…</span>
+                ) : shippingFetchFailed ? (
+                  <span className="text-red-500 text-xs flex items-center gap-2">
+                    Couldn&apos;t load shipping
+                    <button
+                      type="button"
+                      onClick={() => setShippingFetchNonce((n) => n + 1)}
+                      className="underline underline-offset-2 text-red-600 hover:text-red-700"
+                    >
+                      Retry
+                    </button>
+                  </span>
+                ) : shipping === null ? (
+                  <span className="text-red-500 text-xs">Not available for this state</span>
+                ) : shipping === 0 ? (
                   <span className="text-[#c9a465] uppercase font-bold text-xs tracking-widest">Free</span>
                 ) : (
                   <span className="font-bold text-xs text-[#1a1a1a]">{formatCurrency(shipping)}</span>
@@ -553,7 +615,7 @@ export default function CheckoutPage() {
             <div className="space-y-3 pt-2">
               <button
                 type="submit"
-                disabled={isSubmitting || items.length === 0}
+                disabled={isSubmitting || items.length === 0 || shipping === null || shippingLoading}
                 className="w-full bg-[#c9a465] hover:bg-[#d4b87a] text-white py-4 text-sm font-bold uppercase tracking-[0.2em] transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center"
               >
                 {isSubmitting ? (
