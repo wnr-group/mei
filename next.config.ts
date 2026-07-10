@@ -15,6 +15,8 @@ if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
   }
 }
 
+// next.config.ts
+
 const nextConfig: NextConfig = {
   images: {
     unoptimized: process.env.NODE_ENV === "development",
@@ -29,6 +31,18 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         port: "",
         pathname: "/**",
+      },
+      {
+        protocol: 'https',
+        hostname: 'rmkv.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'encrypted-tbn3.gstatic.com',
+        port: '',
+        pathname: '/**',
       },
     ],
   },

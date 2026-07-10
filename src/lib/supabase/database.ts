@@ -885,6 +885,15 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      product_colors: {
+        Row: { id: string; product_id: string; label: string; hex_code: string | null; swatch_image_url: string | null; sort_order: number; created_at: string; deleted_at: string | null }
+        Insert: { id?: string; product_id: string; label: string; hex_code?: string | null; swatch_image_url?: string | null; sort_order?: number }
+        Update: { label?: string; hex_code?: string | null; swatch_image_url?: string | null; sort_order?: number; deleted_at?: string | null }
+      }
+      enquiries: {
+        Row: { id: string; name: string; email: string; phone: string | null; occasion: string | null; budget: string | null; message: string; measurements: Json | null; reference_images: Json | null; status: 'NEW' | 'REPLIED' | 'CLOSED'; admin_reply: string | null; replied_at: string | null; replied_by: string | null; created_at: string }
+        Insert: { id?: string; name: string; email: string; phone?: string | null; occasion?: string | null; budget?: string | null; message: string; measurements?: Json | null; reference_images?: Json | null; status?: 'NEW' | 'REPLIED' | 'CLOSED' }
+        Update: { status?: 'NEW' | 'REPLIED' | 'CLOSED'; admin_reply?: string | null; replied_at?: string | null; replied_by?: string | null; measurements?: Json | null; reference_images?: Json | null }
       }
       products: {
         Row: {

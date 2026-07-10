@@ -83,9 +83,11 @@ export default function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
             {/* Items Column */}
             <div className="lg:col-span-8 space-y-6">
-              {items.map((item) => (
+              {items.map((item) => {
+                const lineKey = item.color_id ? `${item.id}:${item.color_id}` : item.id;
+                return (
                 <div
-                  key={item.id}
+                  key={lineKey}
                   className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-[#e8e0d5]/40 pb-6 gap-6 font-inter"
                 >
                   <div className="flex items-center space-x-6">
@@ -115,6 +117,11 @@ export default function CartPage() {
                       <h3 className="text-base font-light text-[#1a1a1a] font-inter">
                         {item.name}
                       </h3>
+                      {item.color_label && (
+                        <p className="text-xs text-[#9a9a9a] uppercase tracking-widest font-medium">
+                          Colour: {item.color_label}
+                        </p>
+                      )}
                       <p className="text-sm font-light text-[#1a1a1a]">
                         {formatCurrency(item.price)}
                       </p>
@@ -126,7 +133,7 @@ export default function CartPage() {
                     {/* Quantity Selector */}
                     <div className="flex items-center border border-[#e8e0d5] bg-[#faf8f5]">
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() => updateQuantity(item.id, item.color_id, item.quantity - 1)}
                         className="px-3.5 py-1.5 text-[#1a1a1a] hover:text-[#c9a465] transition-colors cursor-pointer text-sm"
                       >
                         -
@@ -135,7 +142,7 @@ export default function CartPage() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() => updateQuantity(item.id, item.color_id, item.quantity + 1)}
                         className="px-3.5 py-1.5 text-[#1a1a1a] hover:text-[#c9a465] transition-colors cursor-pointer text-sm"
                       >
                         +
@@ -144,14 +151,15 @@ export default function CartPage() {
 
                     {/* Remove button */}
                     <button
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => removeItem(item.id, item.color_id)}
                       className="text-sm uppercase tracking-widest font-medium text-[#9a9a9a] hover:text-red-500 transition-colors cursor-pointer"
                     >
                       Remove
                     </button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Summary Column */}

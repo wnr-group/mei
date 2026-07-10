@@ -83,7 +83,7 @@ describe("getOrderById", () => {
         phone: "+91 98765 43210",
         city: "Mumbai",
       },
-      items: [{ id: "item-uuid-1", product_name: "Bridal Lehenga", quantity: 1, unit_price: 120000 }],
+      items: [{ id: "item-uuid-1", product_name: "Bridal Lehenga", quantity: 1, unit_price: 120000, color_label: null }],
     };
     expect(result).toEqual(expected);
   });

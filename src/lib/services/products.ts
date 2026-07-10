@@ -7,13 +7,20 @@ import type { Product } from "@/types";
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 type CategoryRow = Database["public"]["Tables"]["categories"]["Row"];
 type ProductMediaRow = Database["public"]["Tables"]["product_media"]["Row"];
+type ProductColorRow = Database["public"]["Tables"]["product_colors"]["Row"];
 
 type ProductWithRelations = ProductRow & {
   categories: Pick<CategoryRow, "id" | "name" | "slug"> | null;
   product_media:
     | Pick<
         ProductMediaRow,
-        "url" | "sort_order" | "is_primary" | "deleted_at"
+        "url" | "color_id" | "sort_order" | "is_primary" | "deleted_at"
+      >[]
+    | undefined;
+  product_colors:
+    | Pick<
+        ProductColorRow,
+        "id" | "label" | "hex_code" | "swatch_image_url" | "sort_order" | "deleted_at"
       >[]
     | undefined;
 };
@@ -42,6 +49,27 @@ export function _mapDbRowToProduct(row: ProductWithRelations): Product {
       ? [row.image_url]
       : [];
 
+  const coloredMedia =
+    activeMedia.length > 0
+      ? activeMedia.map((m) => ({
+          url: m.url,
+          color_id: m.color_id,
+        }))
+      : row.image_url
+      ? [{ url: row.image_url, color_id: null }]
+      : [];
+
+  const colors = (row.product_colors ?? [])
+    .filter((c) => c.deleted_at === null)
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((c) => ({
+      id: c.id,
+      label: c.label,
+      hex_code: c.hex_code,
+      swatch_image_url: c.swatch_image_url,
+      sort_order: c.sort_order,
+    }));
+
   return {
     id: row.id,
     name: row.name,
@@ -57,6 +85,8 @@ export function _mapDbRowToProduct(row: ProductWithRelations): Product {
     images,
     is_featured: row.is_featured,
     is_new_arrival: row.is_new_arrival,
+    colors,
+    coloredMedia,
   };
 }
 
@@ -72,10 +102,10 @@ function getServiceClient() {
 // ── Query select clause ────────────────────────────────────────────────────
 
 const SELECT =
-  "*, categories(id, name, slug), product_media(url, sort_order, is_primary, deleted_at)";
+  "*, categories(id, name, slug), product_media(url, color_id, sort_order, is_primary, deleted_at), product_colors(id, label, hex_code, swatch_image_url, sort_order, deleted_at)";
 
 const SELECT_INNER_CAT =
-  "*, categories!inner(id, name, slug), product_media(url, sort_order, is_primary, deleted_at)";
+  "*, categories!inner(id, name, slug), product_media(url, color_id, sort_order, is_primary, deleted_at), product_colors(id, label, hex_code, swatch_image_url, sort_order, deleted_at)";
 
 // ── Cached inner implementations ───────────────────────────────────────────
 
@@ -132,72 +162,87 @@ export async function getProducts(
 export async function getProductsByCategory(
   categorySlug: string
 ): Promise<Product[]> {
-  return unstable_cache(
-    async (): Promise<Product[]> => {
-      const supabase = getServiceClient();
-      const { data, error } = await supabase
-        .from("products")
-        .select(SELECT_INNER_CAT)
-        .eq("categories.slug", categorySlug)
-        .eq("status", "PUBLISHED")
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false });
+  try {
+    return await unstable_cache(
+      async (): Promise<Product[]> => {
+        const supabase = getServiceClient();
+        const { data, error } = await supabase
+          .from("products")
+          .select(SELECT_INNER_CAT)
+          .eq("categories.slug", categorySlug)
+          .eq("status", "PUBLISHED")
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("[ProductsService:getProductsByCategory]", error);
-        throw error;
-      }
-      return (data as ProductWithRelations[]).map(_mapDbRowToProduct);
-    },
-    ["products-by-category", categorySlug],
-    { tags: ["products"], revalidate: 60 }
-  )();
+        if (error) {
+          console.error("[ProductsService:getProductsByCategory]", error);
+          throw error;
+        }
+        return (data as ProductWithRelations[]).map(_mapDbRowToProduct);
+      },
+      ["products-by-category", categorySlug],
+      { tags: ["products"], revalidate: 60 }
+    )();
+  } catch (err) {
+    console.error("[ProductsService:getProductsByCategory] falling back due to error:", err);
+    return [];
+  }
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  return unstable_cache(
-    async (): Promise<Product | null> => {
-      const supabase = getServiceClient();
-      const { data, error } = await supabase
-        .from("products")
-        .select(SELECT)
-        .eq("id", id)
-        .eq("status", "PUBLISHED")
-        .is("deleted_at", null)
-        .maybeSingle();
+  try {
+    return await unstable_cache(
+      async (): Promise<Product | null> => {
+        const supabase = getServiceClient();
+        const { data, error } = await supabase
+          .from("products")
+          .select(SELECT)
+          .eq("id", id)
+          .eq("status", "PUBLISHED")
+          .is("deleted_at", null)
+          .maybeSingle();
 
-      if (error) {
-        console.error("[ProductsService:getProductById]", error);
-        throw error;
-      }
-      return data ? _mapDbRowToProduct(data as ProductWithRelations) : null;
-    },
-    ["product-by-id", id],
-    { tags: ["products"], revalidate: 60 }
-  )();
+        if (error) {
+          console.error("[ProductsService:getProductById]", error);
+          throw error;
+        }
+        return data ? _mapDbRowToProduct(data as ProductWithRelations) : null;
+      },
+      ["product-by-id", id],
+      { tags: ["products"], revalidate: 60 }
+    )();
+  } catch (err) {
+    console.error("[ProductsService:getProductById] falling back due to error:", err);
+    return null;
+  }
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  return unstable_cache(
-    async (): Promise<Product | null> => {
-      const supabase = getServiceClient();
-      const { data, error } = await supabase
-        .from("products")
-        .select(SELECT)
-        .eq("slug", slug)
-        .eq("status", "PUBLISHED")
-        .is("deleted_at", null)
-        .maybeSingle() as { data: ProductWithRelations | null; error: { message: string } | null };
+  try {
+    return await unstable_cache(
+      async (): Promise<Product | null> => {
+        const supabase = getServiceClient();
+        const { data, error } = await supabase
+          .from("products")
+          .select(SELECT)
+          .eq("slug", slug)
+          .eq("status", "PUBLISHED")
+          .is("deleted_at", null)
+          .maybeSingle() as { data: ProductWithRelations | null; error: { message: string } | null };
 
-      if (error) {
-        console.error("[ProductsService:getProductBySlug]", error);
-        throw error;
-      }
-      return data ? _mapDbRowToProduct(data as ProductWithRelations) : null;
-    },
-    ["product-by-slug", slug],
-    { tags: ["products"], revalidate: 60 }
-  )();
+        if (error) {
+          console.error("[ProductsService:getProductBySlug]", error);
+          throw error;
+        }
+        return data ? _mapDbRowToProduct(data as ProductWithRelations) : null;
+      },
+      ["product-by-slug", slug],
+      { tags: ["products"], revalidate: 60 }
+    )();
+  } catch (err) {
+    console.error("[ProductsService:getProductBySlug] falling back due to error:", err);
+    return null;
+  }
 }
 
 export async function getRelatedProducts(
@@ -206,26 +251,31 @@ export async function getRelatedProducts(
   limit = 3
 ): Promise<Product[]> {
   if (!categoryId) return [];
-  return unstable_cache(
-    async (): Promise<Product[]> => {
-      const supabase = getServiceClient();
-      const { data, error } = await supabase
-        .from("products")
-        .select(SELECT)
-        .eq("category_id", categoryId)
-        .neq("id", excludeId)
-        .eq("status", "PUBLISHED")
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false })
-        .limit(limit);
+  try {
+    return await unstable_cache(
+      async (): Promise<Product[]> => {
+        const supabase = getServiceClient();
+        const { data, error } = await supabase
+          .from("products")
+          .select(SELECT)
+          .eq("category_id", categoryId)
+          .neq("id", excludeId)
+          .eq("status", "PUBLISHED")
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false })
+          .limit(limit);
 
-      if (error) {
-        console.error("[ProductsService:getRelatedProducts]", error);
-        throw error;
-      }
-      return (data as ProductWithRelations[]).map(_mapDbRowToProduct);
-    },
-    ["related-products", categoryId, excludeId, String(limit)],
-    { tags: ["products"], revalidate: 60 }
-  )();
+        if (error) {
+          console.error("[ProductsService:getRelatedProducts]", error);
+          throw error;
+        }
+        return (data as ProductWithRelations[]).map(_mapDbRowToProduct);
+      },
+      ["related-products", categoryId, excludeId, String(limit)],
+      { tags: ["products"], revalidate: 60 }
+    )();
+  } catch (err) {
+    console.error("[ProductsService:getRelatedProducts] falling back due to error:", err);
+    return [];
+  }
 }

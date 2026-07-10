@@ -2,20 +2,35 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import type { StorefrontColor } from "@/types";
 
 interface ImageGalleryProps {
   images: string[];
+  coloredMedia?: { url: string; color_id: string | null }[];
+  colors?: StorefrontColor[];
+  selectedColorId?: string | null;
+  onColorChange?: (colorId: string | null) => void;
 }
 
-const isSupabaseUrl = (url?: string | null) => {
-  return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
-};
+const isSupabaseUrl = (url?: string | null) =>
+  !!url &&
+  url.startsWith("https://") &&
+  url.includes(".supabase.co/storage/v1/object/public/");
 
-export default function ImageGallery({ images }: ImageGalleryProps) {
+export default function ImageGallery({
+  images,
+  coloredMedia,
+  colors,
+  selectedColorId,
+  onColorChange,
+}: ImageGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  // Internal state used only when this component is not controlled from outside
+  const [internalColorId, setInternalColorId] = useState<string | null>(null);
 
-  const validImages = (images || []).filter(Boolean);
-  if (validImages.length === 0) {
+  const allImages = (images || []).filter(Boolean);
+
+  if (allImages.length === 0) {
     return (
       <div className="relative aspect-[3/4] w-full bg-[#faf8f5] border border-[#e8e0d5]/40 flex items-center justify-center">
         <span className="text-[#9a9a9a] text-xs uppercase tracking-wider font-semibold select-none font-inter">
@@ -25,76 +40,144 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
     );
   }
 
+  // When controlled from outside (ProductDetailBody), use selectedColorId; otherwise internal
+  const isControlled = selectedColorId !== undefined;
+  const activeColorId = isControlled ? selectedColorId : internalColorId;
+
+  function handleColorClick(colorId: string | null) {
+    if (isControlled) {
+      onColorChange?.(colorId);
+    } else {
+      setInternalColorId(colorId);
+    }
+    setActiveIndex(0);
+  }
+
+  // Derive visible images based on active color filter
+  const visibleImages =
+    !activeColorId || !coloredMedia
+      ? allImages
+      : coloredMedia
+          .filter(
+            (m) => m.color_id === activeColorId || m.color_id === null
+          )
+          .map((m) => m.url)
+          .filter(Boolean);
+
+  const displayImages = visibleImages.length > 0 ? visibleImages : allImages;
+  const safeIndex = activeIndex < displayImages.length ? activeIndex : 0;
+
+  const hasColors = colors && colors.length > 0 && coloredMedia && coloredMedia.length > 0;
+
+  const thumbnails = displayImages.slice(0, 4);
+  const overflowCount = displayImages.length > 4 ? displayImages.length - 4 : 0;
+
   return (
-    <div className="space-y-6">
-      {/* Main Image View */}
+    <div className="space-y-4">
+      {/* Main Image */}
       <div className="relative aspect-[3/4] w-full bg-[#faf8f5] border border-[#e8e0d5]/40">
         <Image
-          src={validImages[activeIndex]}
-          alt="Featured bridal lehenga main view"
+          src={displayImages[safeIndex]}
+          alt="Product image"
           fill
           priority
-          sizes="(max-w-7xl) 50vw, 100vw"
+          sizes="(max-width: 1024px) 100vw, 50vw"
           className="object-cover"
-          unoptimized={isSupabaseUrl(validImages[activeIndex])}
+          unoptimized={isSupabaseUrl(displayImages[safeIndex])}
         />
       </div>
 
-      {/* Thumbnails Row below */}
-      <div className="grid grid-cols-4 gap-4">
-        {/* Thumbnail 1: Front view */}
-        <button
-          onClick={() => setActiveIndex(0)}
-          className={`flex items-center justify-center sm:justify-start space-x-0 sm:space-x-2 p-1.5 sm:p-2 border bg-white cursor-pointer h-20 transition-all duration-300 ${
-            activeIndex === 0 ? "border-[#c9a465]" : "border-[#e8e0d5] hover:border-[#c9a465]"
-          }`}
-        >
-          <div className="relative w-10 h-14 flex-shrink-0 bg-[#faf8f5]">
-            <Image
-              src={validImages[0]}
-              alt="Front view preview"
-              fill
-              sizes="40px"
-              className="object-cover"
-              unoptimized={isSupabaseUrl(validImages[0])}
-            />
-          </div>
-          <span className="hidden sm:inline-block text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-[#4a4a4a] text-left leading-tight">
-            Front view
-          </span>
-        </button>
-
-        {/* Thumbnail 2: Embroidery detail */}
-        {validImages[1] ? (
+      {/* Color Swatch Bar — only when colors exist */}
+      {hasColors && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* "All" pill */}
           <button
-            onClick={() => setActiveIndex(1)}
-            className={`flex items-center justify-center sm:justify-start space-x-0 sm:space-x-2 p-1.5 sm:p-2 border bg-white cursor-pointer h-20 transition-all duration-300 ${
-              activeIndex === 1 ? "border-[#c9a465]" : "border-[#e8e0d5] hover:border-[#c9a465]"
+            type="button"
+            onClick={() => handleColorClick(null)}
+            className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border transition-all cursor-pointer ${
+              activeColorId === null
+                ? "border-[#c9a465] text-[#c9a465] bg-white"
+                : "border-[#e8e0d5] text-[#9a9a9a] bg-white hover:border-[#c9a465]"
             }`}
           >
-            <div className="relative w-10 h-14 flex-shrink-0 bg-[#faf8f5]">
-              <Image
-                src={validImages[1]}
-                alt="Embroidery detail preview"
-                fill
-                sizes="40px"
-                className="object-cover"
-                unoptimized={isSupabaseUrl(validImages[1])}
-              />
-            </div>
-            <span className="hidden sm:inline-block text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-[#4a4a4a] text-left leading-tight">
-              Embroidery detail
-            </span>
+            All
           </button>
-        ) : (
-          <div className="bg-[#faf8f5] border border-[#e8e0d5]/40 h-20" />
+
+          {colors!.map((color) => (
+            <button
+              key={color.id}
+              type="button"
+              onClick={() => handleColorClick(color.id)}
+              title={color.label}
+              className={`w-7 h-7 border-2 transition-all cursor-pointer flex-shrink-0 ${
+                activeColorId === color.id
+                  ? "border-[#c9a465]"
+                  : "border-transparent hover:border-[#c9a465]/50"
+              }`}
+            >
+              {color.swatch_image_url ? (
+                <Image
+                  src={color.swatch_image_url}
+                  alt={color.label}
+                  width={28}
+                  height={28}
+                  className="w-full h-full object-cover"
+                  unoptimized={isSupabaseUrl(color.swatch_image_url)}
+                />
+              ) : (
+                <span
+                  className="block w-full h-full"
+                  style={{
+                    backgroundColor: color.hex_code ?? "#e8e0d5",
+                  }}
+                />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Thumbnails Row */}
+      <div className="grid grid-cols-4 gap-3">
+        {thumbnails.map((url, idx) => (
+          <button
+            key={`${url}-${idx}`}
+            type="button"
+            onClick={() => setActiveIndex(idx)}
+            className={`relative h-20 border bg-white cursor-pointer transition-all duration-200 overflow-hidden ${
+              safeIndex === idx
+                ? "border-[#c9a465]"
+                : "border-[#e8e0d5] hover:border-[#c9a465]"
+            }`}
+          >
+            <Image
+              src={url}
+              alt={`View ${idx + 1}`}
+              fill
+              sizes="80px"
+              className="object-cover"
+              unoptimized={isSupabaseUrl(url)}
+            />
+            {/* +N overflow indicator on last slot */}
+            {idx === 3 && overflowCount > 0 && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <span className="text-white text-xs font-bold font-inter">
+                  +{overflowCount}
+                </span>
+              </div>
+            )}
+          </button>
+        ))}
+
+        {/* Fill remaining slots with empty placeholders */}
+        {Array.from({ length: Math.max(0, 4 - thumbnails.length) }).map(
+          (_, i) => (
+            <div
+              key={`empty-${i}`}
+              className="h-20 bg-[#faf8f5] border border-[#e8e0d5]/40"
+            />
+          )
         )}
-
-        {/* Thumbnail 3: Grey Placeholder */}
-        <div className="bg-[#faf8f5] border border-[#e8e0d5]/40 h-20" />
-
-        {/* Thumbnail 4: Grey Placeholder */}
-        <div className="bg-[#faf8f5] border border-[#e8e0d5]/40 h-20" />
       </div>
     </div>
   );

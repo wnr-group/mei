@@ -11,9 +11,10 @@ vi.mock("next/cache", () => ({
 import { _mapDbRowToProduct } from "../products";
 
 const baseMedia = (o: Partial<{
-  url: string; sort_order: number; is_primary: boolean; deleted_at: string | null
+  url: string; color_id: string | null; sort_order: number; is_primary: boolean; deleted_at: string | null
 }> = {}) => ({
   url: "/img/test.png",
+  color_id: null,
   sort_order: 0,
   is_primary: true,
   deleted_at: null,
@@ -42,6 +43,10 @@ const baseRow = (o: Record<string, unknown> = {}) => ({
   has_variants: false,
   size_system_id: null,
   supported_customization_types: [] as ("UNSTITCHED" | "SEMI_STITCHED" | "STANDARD_SIZE" | "CUSTOM_TAILORED")[],
+  product_colors: [] as Array<{
+    id: string; label: string; hex_code: string | null;
+    swatch_image_url: string | null; sort_order: number; deleted_at: string | null;
+  }>,
   ...o,
 });
 
@@ -157,7 +162,8 @@ const fullProductRow: Record<string, unknown> = {
   updated_at: "2026-01-01T00:00:00Z",
   deleted_at: null,
   categories: { id: "cat1", name: "Lehengas", slug: "lehengas" },
-  product_media: [{ url: "/img/test.png", sort_order: 0, is_primary: true, deleted_at: null }],
+  product_media: [{ url: "/img/test.png", color_id: null, sort_order: 0, is_primary: true, deleted_at: null }],
+  product_colors: [],
 };
 
 beforeEach(() => {

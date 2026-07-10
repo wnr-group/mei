@@ -16,6 +16,8 @@ function p(id: string, name: string, short_description: string | null = null): P
     category: { id: "cat1", name: "Lehengas", slug: "lehengas" },
     image_url: "/img/test.png",
     images: ["/img/test.png"],
+    colors: [],
+    coloredMedia: [],
   };
 }
 
