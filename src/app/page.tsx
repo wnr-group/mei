@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { getBanners } from "@/lib/services/banner";
+import HeroBanner from "@/components/home/HeroBanner";
 
 
 export const metadata: Metadata = {
@@ -34,46 +35,10 @@ export default async function Home() {
     getBanners()
   ]);
 
-  // link and title handling
-  const heroBanner = banners[0] || null;
-  const heroImage = heroBanner?.image_url || "/images/hero_lehenga.png";
-  const heroTitle = heroBanner?.title || "Handcrafted Elegance";
-  // Fall back to '/shop/bridal-jewellery' if there are no banners, or if the active banner has no link_url
-  const heroLink = heroBanner?.link_url || "/shop/bridal-jewellery";
-
   return (
     <main className="flex-1 bg-white">
-      {/* Hero Banner */}
-      
-      <section className="relative h-[85vh] w-full bg-[#1a1a1a] flex items-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <Image
-            src={heroImage}
-            alt={heroTitle}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-center opacity-65"
-            unoptimized={isSupabaseUrl(heroImage)}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-        </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white space-y-6 font-inter">
-          <h1 className="text-5xl sm:text-7xl font-light tracking-wide text-white leading-tight font-cormorant max-w-2xl animate-fadeIn">
-            {heroTitle}
-          </h1>
-          <div className="flex flex-wrap gap-4 pt-4 animate-fadeIn items-center justify-center">
-            {heroLink && (
-              <Link
-                href={heroLink}
-                className="hover:bg-[#d4b87a] text-white border border-[#c9a465] hover:border-[#d4b87a] px-8 py-3.5 text-xs font-semibold uppercase tracking-widest transition-colors duration-300"
-              >
-                Shop Collection
-              </Link>
-            )}
-          </div>
-        </div>
-      </section>
+      {/* Hero Banner Carousel */}
+      <HeroBanner banners={banners} />
       
 
       {/* Category Grid */}

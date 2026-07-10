@@ -1,39 +1,125 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useCartStore } from "@/store/cart";
-import type { Product } from "@/types";
+import type { Product, StorefrontColor } from "@/types";
 
 interface Props {
   product: Product;
+  selectedColorId?: string | null;
+  onColorChange?: (colorId: string | null) => void;
 }
 
-export default function ProductDetailClient({ product }: Props) {
+const isSupabaseUrl = (url?: string | null) =>
+  !!url &&
+  url.startsWith("https://") &&
+  url.includes(".supabase.co/storage/v1/object/public/");
+
+export default function ProductDetailClient({ product, selectedColorId, onColorChange }: Props) {
   const addItem = useCartStore((state) => state.addItem);
-  const [isAdded, setIsAdded] = useState(false);
+  const cartItems = useCartStore((state) => state.items);
+  const [colorError, setColorError] = useState(false);
+
+  // Derive whether this exact product+color combination is already in the cart
+  const isInCart = cartItems.some(
+    (i) =>
+      i.id === product.id &&
+      (i.color_id ?? null) === (selectedColorId ?? null)
+  );
+
+  const hasColors = product.colors && product.colors.length > 0;
+  const selectedColor: StorefrontColor | null = hasColors
+    ? (product.colors.find((c) => c.id === selectedColorId) ?? null)
+    : null;
 
   const handleAddToCart = () => {
+    // If the product has colors, require a selection
+    if (hasColors && !selectedColorId) {
+      setColorError(true);
+      return;
+    }
+    setColorError(false);
+
     addItem({
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.images[0] ?? product.image_url ?? "",
       work_types: product.work_types,
+      color_id: selectedColorId ?? null,
+      color_label: selectedColor?.label ?? null,
     });
-    setIsAdded(true);
-    setTimeout(() => setIsAdded(false), 2000);
   };
 
   return (
-    <div className="space-y-3 pt-6">
+    <div className="space-y-4 pt-6">
+      {/* Color variant selector */}
+      {hasColors && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs uppercase tracking-widest font-bold text-[#1a1a1a]">
+              Colour
+            </span>
+            {selectedColor && (
+              <span className="text-xs font-medium text-[#4a4a4a]">
+                {selectedColor.label}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {product.colors.map((color) => {
+              const isSelected = selectedColorId === color.id;
+              return (
+                <button
+                  key={color.id}
+                  type="button"
+                  title={color.label}
+                  onClick={() => {
+                    onColorChange?.(color.id);
+                    setColorError(false);
+                  }}
+                  className={`relative w-9 h-9 border-2 flex-shrink-0 transition-all cursor-pointer focus:outline-none ${
+                    isSelected
+                      ? "border-[#c9a465] shadow-[0_0_0_1px_#c9a465]"
+                      : "border-transparent hover:border-[#c9a465]/60"
+                  }`}
+                >
+                  {color.swatch_image_url ? (
+                    <Image
+                      src={color.swatch_image_url}
+                      alt={color.label}
+                      fill
+                      className="object-cover"
+                      unoptimized={isSupabaseUrl(color.swatch_image_url)}
+                    />
+                  ) : (
+                    <span
+                      className="block w-full h-full"
+                      style={{ backgroundColor: color.hex_code ?? "#e8e0d5" }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          {colorError && (
+            <p className="text-xs text-red-500 font-medium">
+              Please select a colour before adding to cart.
+            </p>
+          )}
+        </div>
+      )}
+
       <button
         onClick={handleAddToCart}
-        className="w-full bg-[#c9a465] hover:bg-[#d4b87a] text-white py-4 text-sm font-semibold uppercase tracking-widest transition-colors duration-300 cursor-pointer text-center"
+        disabled={isInCart}
+        className="w-full bg-[#c9a465] hover:bg-[#d4b87a] text-white py-4 text-sm font-semibold uppercase tracking-widest transition-colors duration-300 cursor-pointer text-center disabled:opacity-70 disabled:cursor-default"
       >
-        {isAdded ? "Added to Cart" : "Add to Cart"}
+        {isInCart ? "In Cart" : "Add to Cart"}
       </button>
       <a
-        href={`https://wa.me/919876543210?text=Hi,%20I'm%20interested%20in%20inquiring%20about%20${encodeURIComponent(product.name)}.`}
+        href={`https://wa.me/919876543210?text=Hi,%20I'm%20interested%20in%20inquiring%20about%20${encodeURIComponent(product.name)}${selectedColor ? `%20(${encodeURIComponent(selectedColor.label)})` : ""}.`}
         target="_blank"
         rel="noreferrer"
         className="w-full border border-[#25d366] text-[#25d366] hover:bg-[#25d366]/5 py-4 text-sm font-semibold uppercase tracking-widest transition-colors duration-300 cursor-pointer flex items-center justify-center gap-2"

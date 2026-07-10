@@ -154,6 +154,7 @@ export default function CheckoutPage() {
           items: items.map((item) => ({
             product_id: item.id,
             quantity: item.quantity,
+            color_id: item.color_id ?? undefined,
           })),
         }),
       });
@@ -201,6 +202,8 @@ export default function CheckoutPage() {
                 product_id: item.id,
                 name: item.name,
                 quantity: item.quantity,
+                color_id: item.color_id ?? undefined,
+                color_label: item.color_label ?? undefined,
               })),
               shipping_address: {
                 addressLine1: formData.addressLine1,
@@ -443,8 +446,10 @@ export default function CheckoutPage() {
               <p className="text-xs text-[#9a9a9a]">No items in your cart.</p>
             ) : (
               <div className="space-y-6">
-                {items.map((item) => (
-                  <div key={item.id} className="flex space-x-4 items-center">
+                {items.map((item) => {
+                  const lineKey = item.color_id ? `${item.id}:${item.color_id}` : item.id;
+                  return (
+                  <div key={lineKey} className="flex space-x-4 items-center">
                     <div className="relative w-16 h-20 bg-white border border-[#e8e0d5]/40 flex-shrink-0 flex items-center justify-center">
                       {item.image ? (
                         <Image
@@ -465,6 +470,11 @@ export default function CheckoutPage() {
                       <h3 className="text-xs font-semibold text-[#1a1a1a] leading-tight">
                         {item.name}
                       </h3>
+                      {item.color_label && (
+                        <p className="text-[10px] text-[#c9a465] uppercase tracking-widest font-semibold">
+                          {item.color_label}
+                        </p>
+                      )}
                       <p className="text-xs text-[#9a9a9a] uppercase tracking-wider font-medium">
                         QTY: {item.quantity}
                       </p>
@@ -473,7 +483,8 @@ export default function CheckoutPage() {
                       </p>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 

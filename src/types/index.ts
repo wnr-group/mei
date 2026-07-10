@@ -98,4 +98,6 @@ export type CartItem = {
   image: string;
   work_types: string[];   // was: craftType: string
   quantity: number;
+  color_id: string | null;
+  color_label: string | null;
 };

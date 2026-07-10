@@ -3,9 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProductBySlug, getRelatedProducts, getProductsByCategory } from "@/lib/services/products";
 import { getCategoryBySlug } from "@/lib/services/categories";
-import ImageGallery from "@/components/product/ImageGallery";
 import ProductCard from "@/components/shop/ProductCard";
-import ProductDetailClient from "@/components/product/ProductDetailClient";
+import ProductDetailBody from "@/components/product/ProductDetailBody";
 import ShopClient from "@/components/shop/ShopClient";
 
 interface Props {
@@ -67,14 +66,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {};
 }
 
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(price);
-}
-
 export default async function ProductDetailPage({ params }: Props) {
   const { slug } = await params;
   const normalizedSlug = decodeURIComponent(slug);
@@ -132,50 +123,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
         {/* Main Details */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-            <div>
-              <ImageGallery
-                images={product.images}
-                coloredMedia={product.coloredMedia}
-                colors={product.colors}
-              />
-            </div>
-
-            <div className="space-y-8 font-inter">
-              <div className="space-y-3">
-                <span className="text-xs uppercase tracking-widest text-[#9a9a9a] font-medium block">
-                  {product.category?.name ?? ""}
-                </span>
-                <h1 className="text-3xl sm:text-4xl font-light tracking-wide text-[#1a1a1a] font-cormorant">
-                  {product.name}
-                </h1>
-                <p className="text-xl font-light text-[#1a1a1a] tracking-wide">
-                  {formatPrice(product.price)}
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <p className="text-sm text-[#4a4a4a] leading-relaxed font-light">
-                  {product.description}
-                </p>
-                <div className="flex flex-wrap gap-3 pt-2">
-                  {product.work_types?.map((type) => (
-                    <span
-                      key={type}
-                      className="border border-[#c9a465] text-[#c9a465] text-xs font-bold uppercase tracking-widest px-4 py-2 select-none"
-                    >
-                      {type}
-                    </span>
-                  ))}
-                  <span className="border border-[#c9a465] text-[#c9a465] text-xs font-bold uppercase tracking-widest px-4 py-2 select-none">
-                    Hand-Embroidered
-                  </span>
-                </div>
-              </div>
-
-              <ProductDetailClient product={product} />
-            </div>
-          </div>
+          <ProductDetailBody product={product} />
         </div>
 
         {/* Recommendations — only rendered when results exist */}

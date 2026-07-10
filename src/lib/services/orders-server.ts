@@ -16,6 +16,7 @@ export interface OrderItem {
   product_name: string;
   quantity: number;
   unit_price: number;
+  color_label: string | null;
 }
 
 export interface OrderCustomer {
@@ -54,14 +55,14 @@ type RawOrderRow = {
   created_at: string;
   deleted_at: string | null;
   customers: { name: string; email: string | null; phone: string | null; city: string | null } | null;
-  order_items: Array<{ id: string; product_name: string; quantity: number; unit_price: number }>;
+  order_items: Array<{ id: string; product_name: string; quantity: number; unit_price: number; product_snapshot: Record<string, string | null> | null }>;
 };
 
 export async function getOrderById(id: string): Promise<OrderDetail | null> {
   const result = await createServiceClient()
     .from("orders")
     .select(
-      "id, order_number, status, total, payment_id, payment_provider, payment_metadata, shipping_address, created_at, deleted_at, customers(name,email,phone,city), order_items(id,product_name,quantity,unit_price)"
+      "id, order_number, status, total, payment_id, payment_provider, payment_metadata, shipping_address, created_at, deleted_at, customers(name,email,phone,city), order_items(id,product_name,quantity,unit_price,product_snapshot)"
     )
     .eq("id", id)
     .maybeSingle();
@@ -110,6 +111,7 @@ export async function getOrderById(id: string): Promise<OrderDetail | null> {
       product_name: item.product_name,
       quantity: item.quantity,
       unit_price: item.unit_price,
+      color_label: item.product_snapshot?.color_label ?? null,
     })),
   };
 }

@@ -98,6 +98,11 @@ export default async function OrderDetailPage({ params }: Props) {
                     <p className="text-sm font-semibold text-[#1a1a1a] leading-tight">
                       {item.product_name}
                     </p>
+                    {item.color_label && (
+                      <p className="text-xs text-[#c9a465] uppercase tracking-widest font-semibold">
+                        {item.color_label}
+                      </p>
+                    )}
                     <p className="text-xs text-[#9a9a9a] uppercase tracking-wider">
                       QTY: {item.quantity}
                     </p>

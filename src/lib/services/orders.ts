@@ -11,6 +11,8 @@ export interface CreateOrderInput {
     product_id: string;
     name: string;
     quantity: number;
+    color_id?: string;
+    color_label?: string;
   }>;
   shipping_address: Record<string, string>;
   payment: {

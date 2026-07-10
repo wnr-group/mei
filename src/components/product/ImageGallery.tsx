@@ -8,6 +8,8 @@ interface ImageGalleryProps {
   images: string[];
   coloredMedia?: { url: string; color_id: string | null }[];
   colors?: StorefrontColor[];
+  selectedColorId?: string | null;
+  onColorChange?: (colorId: string | null) => void;
 }
 
 const isSupabaseUrl = (url?: string | null) =>
@@ -19,9 +21,12 @@ export default function ImageGallery({
   images,
   coloredMedia,
   colors,
+  selectedColorId,
+  onColorChange,
 }: ImageGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [activeColorId, setActiveColorId] = useState<string | null>(null);
+  // Internal state used only when this component is not controlled from outside
+  const [internalColorId, setInternalColorId] = useState<string | null>(null);
 
   const allImages = (images || []).filter(Boolean);
 
@@ -33,6 +38,19 @@ export default function ImageGallery({
         </span>
       </div>
     );
+  }
+
+  // When controlled from outside (ProductDetailBody), use selectedColorId; otherwise internal
+  const isControlled = selectedColorId !== undefined;
+  const activeColorId = isControlled ? selectedColorId : internalColorId;
+
+  function handleColorClick(colorId: string | null) {
+    if (isControlled) {
+      onColorChange?.(colorId);
+    } else {
+      setInternalColorId(colorId);
+    }
+    setActiveIndex(0);
   }
 
   // Derive visible images based on active color filter
@@ -50,11 +68,6 @@ export default function ImageGallery({
   const safeIndex = activeIndex < displayImages.length ? activeIndex : 0;
 
   const hasColors = colors && colors.length > 0 && coloredMedia && coloredMedia.length > 0;
-
-  function handleColorClick(colorId: string | null) {
-    setActiveColorId(colorId);
-    setActiveIndex(0);
-  }
 
   const thumbnails = displayImages.slice(0, 4);
   const overflowCount = displayImages.length > 4 ? displayImages.length - 4 : 0;
