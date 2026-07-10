@@ -23,26 +23,33 @@ export function _mapDbRowToBanner(row: DbBanner): Banner {
 }
 
 export async function getBanners(): Promise<Banner[]> {
-  return unstable_cache(
-    async (): Promise<Banner[]> => {
-      const supabase = getServiceClient();
-      const { data, error } = await supabase
-        .from("banners")
-        .select("*")
-        .eq("is_active", true)
-        .is("deleted_at", null)
-        .order("sort_order", { ascending: true });
-      if (error) {
-        console.error("[BannersService:getBanners]", error);
-        throw error;
-      }
-      return (data as DbBanner[]).map(_mapDbRowToBanner);
-    },
-    ["storefront-banners"],
-    { tags: ["banners"], revalidate: 60 },
-  )();
+  try {
+    return await unstable_cache(
+      async (): Promise<Banner[]> => {
+        const supabase = getServiceClient();
+        const { data, error } = await supabase
+          .from("banners")
+          .select("*")
+          .eq("is_active", true)
+          .is("deleted_at", null)
+          .order("sort_order", { ascending: true });
+        if (error) {
+          console.error("[BannersService:getBanners]", error);
+          throw error;
+        }
+        return (data as DbBanner[]).map(_mapDbRowToBanner);
+      },
+      ["storefront-banners"],
+      { tags: ["banners"], revalidate: 60 },
+    )();
+  } catch (err) {
+    // Backend/API failure (e.g. invalid key, network error, Supabase down).
+    // Treat exactly like "admin has no banners" so the homepage falls back
+    // to the local default hero image instead of crashing.
+    console.error("[BannersService:getBanners] falling back due to error:", err);
+    return [];
+  }
 }
-
 
 
 
