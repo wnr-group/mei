@@ -12,17 +12,17 @@ type ProductColorRow = Database["public"]["Tables"]["product_colors"]["Row"];
 type ProductWithRelations = ProductRow & {
   categories: Pick<CategoryRow, "id" | "name" | "slug"> | null;
   product_media:
-    | Pick<
-        ProductMediaRow,
-        "url" | "color_id" | "sort_order" | "is_primary" | "deleted_at"
-      >[]
-    | undefined;
+  | Pick<
+    ProductMediaRow,
+    "url" | "color_id" | "sort_order" | "is_primary" | "deleted_at"
+  >[]
+  | undefined;
   product_colors:
-    | Pick<
-        ProductColorRow,
-        "id" | "label" | "hex_code" | "swatch_image_url" | "sort_order" | "deleted_at"
-      >[]
-    | undefined;
+  | Pick<
+    ProductColorRow,
+    "id" | "label" | "hex_code" | "swatch_image_url" | "sort_order" | "deleted_at"
+  >[]
+  | undefined;
 };
 
 // ── Public API ─────────────────────────────────────────────────────────────
@@ -46,18 +46,18 @@ export function _mapDbRowToProduct(row: ProductWithRelations): Product {
     activeMedia.length > 0
       ? activeMedia.map((m) => m.url)
       : row.image_url
-      ? [row.image_url]
-      : [];
+        ? [row.image_url]
+        : [];
 
   const coloredMedia =
     activeMedia.length > 0
       ? activeMedia.map((m) => ({
-          url: m.url,
-          color_id: m.color_id,
-        }))
+        url: m.url,
+        color_id: m.color_id,
+      }))
       : row.image_url
-      ? [{ url: row.image_url, color_id: null }]
-      : [];
+        ? [{ url: row.image_url, color_id: null }]
+        : [];
 
   const colors = (row.product_colors ?? [])
     .filter((c) => c.deleted_at === null)
@@ -75,6 +75,8 @@ export function _mapDbRowToProduct(row: ProductWithRelations): Product {
     name: row.name,
     slug: row.slug ?? "",
     price: row.price,
+    price_unstitched: row.price_unstitched,
+    price_stitched: row.price_stitched,
     short_description: row.short_description,
     description: row.description,
     work_types: row.work_types ?? [],

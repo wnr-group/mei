@@ -21,11 +21,34 @@ export default function ProductDetailClient({ product, selectedColorId, onColorC
   const cartItems = useCartStore((state) => state.items);
   const [colorError, setColorError] = useState(false);
 
-  // Derive whether this exact product+color combination is already in the cart
+  // ── Stitching option logic ────────────────────────────────────────────
+  const hasUnstitched = product.price_unstitched != null;
+  const hasStitched = product.price_stitched != null;
+  const hasStitchingOptions = hasUnstitched || hasStitched;
+  const showToggle = hasUnstitched && hasStitched;
+
+  // Default: Unstitched if available, else whichever single option exists, else null
+  const defaultStitching: "stitched" | "unstitched" | null = hasUnstitched
+    ? "unstitched"
+    : hasStitched
+      ? "stitched"
+      : null;
+
+  const [selectedStitching, setSelectedStitching] = useState<"stitched" | "unstitched" | null>(
+    defaultStitching
+  );
+
+  const selectedPrice = hasStitchingOptions
+    ? (selectedStitching === "stitched" ? product.price_stitched : product.price_unstitched) ??
+    product.price
+    : product.price;
+
+  // Derive whether this exact product+color+stitching combination is already in the cart
   const isInCart = cartItems.some(
     (i) =>
       i.id === product.id &&
-      (i.color_id ?? null) === (selectedColorId ?? null)
+      (i.color_id ?? null) === (selectedColorId ?? null) &&
+      (i.stitching_type ?? null) === (hasStitchingOptions ? selectedStitching : null)
   );
 
   const hasColors = product.colors && product.colors.length > 0;
@@ -34,7 +57,6 @@ export default function ProductDetailClient({ product, selectedColorId, onColorC
     : null;
 
   const handleAddToCart = () => {
-    // If the product has colors, require a selection
     if (hasColors && !selectedColorId) {
       setColorError(true);
       return;
@@ -44,16 +66,56 @@ export default function ProductDetailClient({ product, selectedColorId, onColorC
     addItem({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: selectedPrice,
       image: product.images[0] ?? product.image_url ?? "",
       work_types: product.work_types,
       color_id: selectedColorId ?? null,
       color_label: selectedColor?.label ?? null,
+      stitching_type: hasStitchingOptions ? selectedStitching : null,
     });
   };
 
   return (
     <div className="space-y-4 pt-6">
+      {/* Stitching selector */}
+      {hasStitchingOptions && (
+        <div className="space-y-3">
+          <span className="text-xs uppercase tracking-widest font-bold text-[#1a1a1a]">
+            Stitching
+          </span>
+          {showToggle ? (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setSelectedStitching("unstitched")}
+                className={`flex-1 border-2 py-3 px-4 text-sm font-medium transition-all cursor-pointer ${selectedStitching === "unstitched"
+                    ? "border-[#c9a465] bg-[#c9a465]/5"
+                    : "border-[#e8e0d5] hover:border-[#c9a465]/60"
+                  }`}
+              >
+                Unstitched<br />
+                <span className="text-xs">₹{product.price_unstitched?.toLocaleString("en-IN")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedStitching("stitched")}
+                className={`flex-1 border-2 py-3 px-4 text-sm font-medium transition-all cursor-pointer ${selectedStitching === "stitched"
+                    ? "border-[#c9a465] bg-[#c9a465]/5"
+                    : "border-[#e8e0d5] hover:border-[#c9a465]/60"
+                  }`}
+              >
+                Stitched<br />
+                <span className="text-xs">₹{product.price_stitched?.toLocaleString("en-IN")}</span>
+              </button>
+            </div>
+          ) : (
+            <p className="text-sm font-medium text-[#4a4a4a]">
+              ₹{selectedPrice?.toLocaleString("en-IN")}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Color variant selector */}
       {hasColors && (
         <div className="space-y-3">
@@ -79,11 +141,10 @@ export default function ProductDetailClient({ product, selectedColorId, onColorC
                     onColorChange?.(color.id);
                     setColorError(false);
                   }}
-                  className={`relative w-9 h-9 border-2 flex-shrink-0 transition-all cursor-pointer focus:outline-none ${
-                    isSelected
+                  className={`relative w-9 h-9 border-2 flex-shrink-0 transition-all cursor-pointer focus:outline-none ${isSelected
                       ? "border-[#c9a465] shadow-[0_0_0_1px_#c9a465]"
                       : "border-transparent hover:border-[#c9a465]/60"
-                  }`}
+                    }`}
                 >
                   {color.swatch_image_url ? (
                     <Image
@@ -118,8 +179,8 @@ export default function ProductDetailClient({ product, selectedColorId, onColorC
       >
         {isInCart ? "In Cart" : "Add to Cart"}
       </button>
-      <a
-        href={`https://wa.me/919876543210?text=Hi,%20I'm%20interested%20in%20inquiring%20about%20${encodeURIComponent(product.name)}${selectedColor ? `%20(${encodeURIComponent(selectedColor.label)})` : ""}.`}
+
+      <a href={`https://wa.me/919876543210?text=Hi,%20I'm%20interested%20in%20inquiring%20about%20${encodeURIComponent(product.name)}${selectedColor ? `%20(${encodeURIComponent(selectedColor.label)})` : ""}.`}
         target="_blank"
         rel="noreferrer"
         className="w-full border border-[#25d366] text-[#25d366] hover:bg-[#25d366]/5 py-4 text-sm font-semibold uppercase tracking-widest transition-colors duration-300 cursor-pointer flex items-center justify-center gap-2"

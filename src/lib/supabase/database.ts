@@ -537,6 +537,7 @@ export type Database = {
           unit_price: number
           variant_id: string | null
           variant_snapshot: Json | null
+          stitching_type: 'stitched' | 'unstitched' | null
         }
         Insert: {
           created_at?: string
@@ -549,6 +550,7 @@ export type Database = {
           unit_price: number
           variant_id?: string | null
           variant_snapshot?: Json | null
+          stitching_type?: 'stitched' | 'unstitched' | null
         }
         Update: {
           created_at?: string
@@ -561,6 +563,7 @@ export type Database = {
           unit_price?: number
           variant_id?: string | null
           variant_snapshot?: Json | null
+          stitching_type?: 'stitched' | 'unstitched' | null
         }
         Relationships: [
           {
@@ -908,6 +911,8 @@ export type Database = {
           is_new_arrival: boolean
           name: string
           price: number
+          price_unstitched: number | null
+          price_stitched: number | null
           product_code: string
           short_description: string | null
           size_system_id: string | null
@@ -929,6 +934,8 @@ export type Database = {
           is_new_arrival?: boolean
           name: string
           price: number
+          price_unstitched?: number | null
+          price_stitched?: number | null
           product_code: string
           short_description?: string | null
           size_system_id?: string | null
@@ -950,6 +957,8 @@ export type Database = {
           is_new_arrival?: boolean
           name?: string
           price?: number
+          price_unstitched?: number | null
+          price_stitched?: number | null
           product_code?: string
           short_description?: string | null
           size_system_id?: string | null

@@ -42,6 +42,8 @@ export type Product = {
   name: string;
   slug: string;
   price: number;
+  price_unstitched: number | null;
+  price_stitched: number | null;
   short_description: string | null; // was: shortDescription
   description: string | null;
   work_types: string[]; // was: craftType: string
@@ -99,8 +101,9 @@ export type CartItem = {
   name: string;
   price: number;
   image: string;
-  work_types: string[];   // was: craftType: string
+  work_types: string[];
   quantity: number;
   color_id: string | null;
   color_label: string | null;
+  stitching_type: "stitched" | "unstitched" | null;   // ADD THIS
 };

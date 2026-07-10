@@ -150,11 +150,12 @@ export default function CheckoutPage() {
       const res = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+       body: JSON.stringify({
           items: items.map((item) => ({
             product_id: item.id,
             quantity: item.quantity,
             color_id: item.color_id ?? undefined,
+            stitching_type: item.stitching_type ?? undefined,
           })),
         }),
       });
@@ -204,6 +205,7 @@ export default function CheckoutPage() {
                 quantity: item.quantity,
                 color_id: item.color_id ?? undefined,
                 color_label: item.color_label ?? undefined,
+                stitching_type: item.stitching_type ?? undefined,
               })),
               shipping_address: {
                 addressLine1: formData.addressLine1,
@@ -447,7 +449,7 @@ export default function CheckoutPage() {
             ) : (
               <div className="space-y-6">
                 {items.map((item) => {
-                  const lineKey = item.color_id ? `${item.id}:${item.color_id}` : item.id;
+                 const lineKey = `${item.id}:${item.color_id ?? ""}:${item.stitching_type ?? ""}`;
                   return (
                   <div key={lineKey} className="flex space-x-4 items-center">
                     <div className="relative w-16 h-20 bg-white border border-[#e8e0d5]/40 flex-shrink-0 flex items-center justify-center">
@@ -470,12 +472,15 @@ export default function CheckoutPage() {
                       <h3 className="text-xs font-semibold text-[#1a1a1a] leading-tight">
                         {item.name}
                       </h3>
-                      {item.color_label && (
+                     {item.color_label && (
                         <p className="text-[10px] text-[#c9a465] uppercase tracking-widest font-semibold">
                           {item.color_label}
                         </p>
                       )}
-                      <p className="text-xs text-[#9a9a9a] uppercase tracking-wider font-medium">
+                      <p className="text-[10px] text-[#9a9a9a] uppercase tracking-wider font-medium">
+                        {item.stitching_type && (
+                          <>{item.stitching_type === "stitched" ? "Stitched" : "Unstitched"} · </>
+                        )}
                         QTY: {item.quantity}
                       </p>
                       <p className="text-xs font-semibold text-[#1a1a1a] pt-1">
