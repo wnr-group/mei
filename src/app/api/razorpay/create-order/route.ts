@@ -16,12 +16,19 @@ export async function POST(req: NextRequest) {
       quantity: number;
       stitching_type?: "stitched" | "unstitched";
     }> = body.items ?? [];
+    const state: string = typeof body.state === "string" ? body.state.trim() : "";
 
     if (!items.length) {
       return NextResponse.json({ error: "EMPTY_CART" }, { status: 400 });
     }
 
-    const { data: products, error } = await anonClient()
+    if (!state) {
+      return NextResponse.json({ error: "SHIPPING_STATE_MISSING" }, { status: 400 });
+    }
+
+    const supabase = anonClient();
+
+    const { data: products, error } = await supabase
       .from("products")
       .select("id, price, price_unstitched, price_stitched")
       .in("id", items.map((i) => i.product_id));
@@ -51,8 +58,43 @@ export async function POST(req: NextRequest) {
 
       subtotal += price * item.quantity;
     }
-    // Shipping threshold — mirrors src/lib/config/shipping.ts
-    const shipping = subtotal >= 5000 ? 0 : 150;
+
+    // State-wise shipping — must mirror create_order_txn exactly so the amount
+    // charged via Razorpay equals the total the DB records. Reject an
+    // unconfigured state here (before payment) rather than letting the RPC fail
+    // after the customer has already paid.
+    const { data: rate, error: rateError } = await supabase
+      .from("shipping_rates")
+      .select("charge")
+      .eq("state", state)
+      .maybeSingle();
+
+    if (rateError) {
+      console.error("[razorpay/create-order] shipping rate lookup failed", rateError);
+      return NextResponse.json({ error: "SHIPPING_LOOKUP_FAILED" }, { status: 500 });
+    }
+    if (!rate) {
+      return NextResponse.json({ error: "SHIPPING_STATE_NOT_CONFIGURED" }, { status: 400 });
+    }
+
+    const { data: settings, error: settingsError } = await supabase
+      .from("shipping_settings")
+      .select("free_shipping_enabled, free_shipping_threshold")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (settingsError) {
+      console.error("[razorpay/create-order] shipping settings lookup failed", settingsError);
+      return NextResponse.json({ error: "SHIPPING_LOOKUP_FAILED" }, { status: 500 });
+    }
+
+    const stateCharge = Number(rate.charge);
+    const freeEnabled = settings?.free_shipping_enabled ?? false;
+    const freeThreshold =
+      settings?.free_shipping_threshold != null ? Number(settings.free_shipping_threshold) : null;
+    const shipping =
+      freeEnabled && freeThreshold != null && subtotal >= freeThreshold ? 0 : stateCharge;
+
     const total = subtotal + shipping;
     const amountPaise = Math.round(total * 100);
 

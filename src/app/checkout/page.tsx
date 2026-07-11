@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCartStore } from "@/store/cart";
-import { calculateShipping } from "@/lib/config/shipping";
 import { formatCurrency } from "@/lib/utils/format";
 import { createOrder } from "@/lib/services/orders";
 import { getMeasurementFieldsForProduct } from "@/lib/services/measurements";
+import { getShippingPolicy, calculateStateShipping, type ShippingPolicy } from "@/lib/services/shipping";
 import type { MeasurementField } from "@/types";
 
 // Stable identity for a cart line (same product + color + stitching = one line).
@@ -83,6 +83,11 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
+  // Admin-configured shipping (state-wise rates + free-shipping rule). The
+  // storefront must price shipping from this, not a hardcoded flat rate, so the
+  // amount charged via Razorpay matches what create_order_txn records.
+  const [shippingPolicy, setShippingPolicy] = useState<ShippingPolicy | null>(null);
+
   // Measurement fields per stitched line, resolved from each product's template.
   // Keyed by lineKeyOf(item). Values keyed by fieldKeyOf(field) → inches string.
   const [fieldsByLine, setFieldsByLine] = useState<Record<string, MeasurementField[]>>({});
@@ -131,6 +136,21 @@ export default function CheckoutPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    getShippingPolicy()
+      .then((policy) => {
+        if (!cancelled) setShippingPolicy(policy);
+      })
+      .catch(() => {
+        // Leave shippingPolicy null — the summary shows a load-failure notice
+        // and Pay stays disabled rather than charging an unknown shipping cost.
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -233,6 +253,7 @@ export default function CheckoutPage() {
             color_id: item.color_id ?? undefined,
             stitching_type: item.stitching_type ?? undefined,
           })),
+          state: formData.state,
         }),
       });
 
@@ -407,8 +428,13 @@ export default function CheckoutPage() {
   }
 
   const subtotalVal = total();
-  const shipping = calculateShipping(subtotalVal);
-  const grandTotal = subtotalVal + shipping;
+  const selectedRate = shippingPolicy?.rates.find((r) => r.state === formData.state) ?? null;
+  const shipping =
+    shippingPolicy && selectedRate
+      ? calculateStateShipping(subtotalVal, selectedRate.charge, shippingPolicy)
+      : null;
+  const grandTotal = shipping != null ? subtotalVal + shipping : subtotalVal;
+  const canPay = shipping != null && items.length > 0;
 
   return (
     <main className="flex-1 bg-white py-16">
@@ -499,14 +525,42 @@ export default function CheckoutPage() {
                     onChange={handleChange}
                     error={errors.city}
                   />
-                  <FormField
-                    id="state"
-                    label="State"
-                    placeholder="Maharashtra"
-                    value={formData.state}
-                    onChange={handleChange}
-                    error={errors.state}
-                  />
+                  <div className="w-full space-y-1">
+                    <label
+                      htmlFor="state"
+                      className="block text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a]"
+                    >
+                      State
+                    </label>
+                    <select
+                      id="state"
+                      value={formData.state}
+                      onChange={(e) => {
+                        const { value } = e.target;
+                        setFormData((prev) => ({ ...prev, state: value }));
+                        if (errors.state) setErrors((prev) => ({ ...prev, state: "" }));
+                      }}
+                      disabled={!shippingPolicy}
+                      className={`w-full bg-transparent border-b pb-2 pt-1 text-sm font-inter text-[#1a1a1a] focus:outline-none focus:border-[#c9a465] transition-all duration-300 rounded-none outline-none disabled:opacity-50 ${
+                        errors.state ? "border-red-500 focus:border-red-500" : "border-[#e8e0d5]"
+                      }`}
+                    >
+                      <option value="">
+                        {shippingPolicy ? "Select a state" : "Loading states…"}
+                      </option>
+                      {shippingPolicy?.rates.map((r) => (
+                        <option key={r.state} value={r.state}>
+                          {r.state}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.state && (
+                      <p className="text-xs text-red-500 font-inter mt-0.5">{errors.state}</p>
+                    )}
+                    <p className="text-[10px] text-[#9a9a9a] font-inter pt-0.5">
+                      We currently ship only to the states listed here.
+                    </p>
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <FormField
@@ -665,7 +719,9 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between text-[#4a4a4a] font-medium">
                 <span className="uppercase text-xs tracking-widest font-bold">Shipping</span>
-                {shipping === 0 ? (
+                {shipping == null ? (
+                  <span className="text-[#9a9a9a] text-xs tracking-wide">Select a state</span>
+                ) : shipping === 0 ? (
                   <span className="text-[#c9a465] uppercase font-bold text-xs tracking-widest">Free</span>
                 ) : (
                   <span className="font-bold text-xs text-[#1a1a1a]">{formatCurrency(shipping)}</span>
@@ -681,7 +737,7 @@ export default function CheckoutPage() {
                 Total
               </span>
               <span className="text-lg font-light text-[#1a1a1a]">
-                {formatCurrency(grandTotal)}
+                {shipping == null ? "—" : formatCurrency(grandTotal)}
               </span>
             </div>
 
@@ -699,7 +755,7 @@ export default function CheckoutPage() {
             <div className="space-y-3 pt-2">
               <button
                 type="submit"
-                disabled={isSubmitting || items.length === 0}
+                disabled={isSubmitting || !canPay}
                 className="w-full bg-[#c9a465] hover:bg-[#d4b87a] text-white py-4 text-sm font-bold uppercase tracking-[0.2em] transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center"
               >
                 {isSubmitting ? (
@@ -726,6 +782,8 @@ export default function CheckoutPage() {
                     </svg>
                     Processing...
                   </>
+                ) : shipping == null ? (
+                  "Select a State to Continue"
                 ) : (
                   `Pay Now — ${formatCurrency(grandTotal)}`
                 )}

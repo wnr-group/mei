@@ -8,7 +8,6 @@ const isSupabaseUrl = (url?: string | null) => {
   return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
 };
 import { useCartStore } from "@/store/cart";
-import { calculateShipping } from "@/lib/config/shipping";
 import { formatCurrency } from "@/lib/utils/format";
 
 export default function CartPage() {
@@ -24,8 +23,6 @@ export default function CartPage() {
   }, []);
 
   const subtotal = total();
-  const shipping = calculateShipping(subtotal);
-  const grandTotal = subtotal + shipping;
 
   if (!mounted) {
     return (
@@ -182,15 +179,9 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between text-[#4a4a4a]">
                   <span>Shipping</span>
-                  {shipping === 0 ? (
-                    <span className="text-[#c9a465] font-semibold uppercase tracking-wider">
-                      Free
-                    </span>
-                  ) : (
-                    <span className="font-semibold text-[#1a1a1a]">
-                      {formatCurrency(shipping)}
-                    </span>
-                  )}
+                  <span className="text-[#9a9a9a] text-xs tracking-wide self-center">
+                    Calculated at checkout
+                  </span>
                 </div>
               </div>
 
@@ -198,10 +189,10 @@ export default function CartPage() {
 
               <div className="flex justify-between items-baseline">
                 <span className="text-sm font-semibold uppercase tracking-widest text-[#1a1a1a]">
-                  Total
+                  Subtotal
                 </span>
                 <span className="text-xl font-inter font-bold text-[#c9a465]">
-                  {formatCurrency(grandTotal)}
+                  {formatCurrency(subtotal)}
                 </span>
               </div>
 
