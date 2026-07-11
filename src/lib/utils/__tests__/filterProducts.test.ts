@@ -8,6 +8,8 @@ function p(id: string, name: string, short_description: string | null = null): P
     name,
     slug: id,
     price: 100000,
+    price_unstitched: null,
+    price_stitched: null,
     short_description,
     description: null,
     work_types: [],
@@ -18,6 +20,7 @@ function p(id: string, name: string, short_description: string | null = null): P
     images: ["/img/test.png"],
     colors: [],
     coloredMedia: [],
+    measurementFields: [],
   };
 }
 

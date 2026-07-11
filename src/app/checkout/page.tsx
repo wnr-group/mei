@@ -7,6 +7,18 @@ import { useCartStore } from "@/store/cart";
 import { calculateShipping } from "@/lib/config/shipping";
 import { formatCurrency } from "@/lib/utils/format";
 import { createOrder } from "@/lib/services/orders";
+import { getMeasurementFieldsForProduct } from "@/lib/services/measurements";
+import type { MeasurementField } from "@/types";
+
+// Stable identity for a cart line (same product + color + stitching = one line).
+function lineKeyOf(item: { id: string; color_id: string | null; stitching_type: string | null }) {
+  return `${item.id}:${item.color_id ?? ""}:${item.stitching_type ?? ""}`;
+}
+
+// Identity for a single measurement field within a line (custom fields keyed by label).
+function fieldKeyOf(f: MeasurementField) {
+  return f.key === "custom" ? `custom:${f.label}` : f.key;
+}
 
 interface RazorpayWindow extends Window {
   Razorpay: new (options: Record<string, unknown>) => { open: () => void };
@@ -71,6 +83,51 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
+  // Measurement fields per stitched line, resolved from each product's template.
+  // Keyed by lineKeyOf(item). Values keyed by fieldKeyOf(field) → inches string.
+  const [fieldsByLine, setFieldsByLine] = useState<Record<string, MeasurementField[]>>({});
+  const [measurements, setMeasurements] = useState<Record<string, Record<string, string>>>({});
+  const [measurementErrors, setMeasurementErrors] = useState<Record<string, string>>({});
+
+  const stitchedItems = items.filter((i) => i.stitching_type === "stitched");
+  // Signature of the stitched product ids, so the resolver effect re-runs only
+  // when the set of stitched products changes (not on every render).
+  const stitchedSig = stitchedItems.map((i) => lineKeyOf(i)).sort().join("|");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (stitchedItems.length === 0) {
+        if (!cancelled) setFieldsByLine({});
+        return;
+      }
+      const entries = await Promise.all(
+        stitchedItems.map(async (item) => {
+          const fields = await getMeasurementFieldsForProduct(item.id);
+          return [lineKeyOf(item), fields] as const;
+        })
+      );
+      if (!cancelled) {
+        setFieldsByLine(Object.fromEntries(entries.filter(([, f]) => f.length > 0)));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stitchedSig]);
+
+  function setMeasurementValue(lineKey: string, fieldKey: string, value: string) {
+    setMeasurements((prev) => ({
+      ...prev,
+      [lineKey]: { ...(prev[lineKey] ?? {}), [fieldKey]: value },
+    }));
+    const errKey = `${lineKey}::${fieldKey}`;
+    if (measurementErrors[errKey]) {
+      setMeasurementErrors((prev) => ({ ...prev, [errKey]: "" }));
+    }
+  }
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
@@ -133,8 +190,27 @@ export default function CheckoutPage() {
     }
     if (!formData.country.trim()) newErrors.country = "Country is required";
 
+    // Required measurements on stitched items must be filled with a valid number.
+    const mErrors: Record<string, string> = {};
+    for (const [lineKey, fields] of Object.entries(fieldsByLine)) {
+      for (const f of fields) {
+        const fk = fieldKeyOf(f);
+        const raw = (measurements[lineKey]?.[fk] ?? "").trim();
+        const errKey = `${lineKey}::${fk}`;
+        if (raw === "") {
+          if (f.is_required) mErrors[errKey] = "Required";
+          continue;
+        }
+        const n = Number(raw);
+        if (!Number.isFinite(n) || n <= 0 || n >= 200) {
+          mErrors[errKey] = "Enter inches (0–200)";
+        }
+      }
+    }
+
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setMeasurementErrors(mErrors);
+    return Object.keys(newErrors).length === 0 && Object.keys(mErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -199,14 +275,31 @@ export default function CheckoutPage() {
                 phone: formData.phone,
                 city: formData.city,
               },
-              items: items.map((item) => ({
-                product_id: item.id,
-                name: item.name,
-                quantity: item.quantity,
-                color_id: item.color_id ?? undefined,
-                color_label: item.color_label ?? undefined,
-                stitching_type: item.stitching_type ?? undefined,
-              })),
+              items: items.map((item) => {
+                const lineKey = lineKeyOf(item);
+                const fields = fieldsByLine[lineKey] ?? [];
+                const filled = fields
+                  .map((f) => {
+                    const fk = fieldKeyOf(f);
+                    const raw = (measurements[lineKey]?.[fk] ?? "").trim();
+                    if (raw === "") return null;
+                    return {
+                      field_key: f.key,
+                      label: f.key === "custom" ? f.label : null,
+                      value_in: Number(raw),
+                    };
+                  })
+                  .filter((m): m is NonNullable<typeof m> => m !== null);
+                return {
+                  product_id: item.id,
+                  name: item.name,
+                  quantity: item.quantity,
+                  color_id: item.color_id ?? undefined,
+                  color_label: item.color_label ?? undefined,
+                  stitching_type: item.stitching_type ?? undefined,
+                  ...(filled.length > 0 ? { measurements: filled } : {}),
+                };
+              }),
               shipping_address: {
                 addressLine1: formData.addressLine1,
                 addressLine2: formData.addressLine2,
@@ -435,12 +528,81 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </div>
+
+            {/* Card 3: Measurements (stitched items only) */}
+            {Object.keys(fieldsByLine).length > 0 && (
+              <div className="bg-white border border-[#e8e0d5] p-8 space-y-6">
+                <div className="space-y-1">
+                  <h2 className="text-sm font-medium text-[#1a1a1a] tracking-wide select-none">
+                    Measurements
+                  </h2>
+                  <p className="text-xs text-[#9a9a9a]">
+                    Enter measurements in inches for your stitched pieces. Fields marked
+                    <span className="text-[#c9a465] font-semibold"> *</span> are required; our
+                    atelier will confirm everything before production.
+                  </p>
+                </div>
+
+                {stitchedItems.map((item) => {
+                  const lineKey = lineKeyOf(item);
+                  const fields = fieldsByLine[lineKey];
+                  if (!fields || fields.length === 0) return null;
+                  return (
+                    <div key={lineKey} className="space-y-4">
+                      <p className="text-xs font-bold uppercase tracking-widest text-[#1a1a1a]">
+                        {item.name}
+                        {item.color_label && (
+                          <span className="text-[#c9a465]"> · {item.color_label}</span>
+                        )}
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        {fields.map((f) => {
+                          const fk = fieldKeyOf(f);
+                          const errKey = `${lineKey}::${fk}`;
+                          const err = measurementErrors[errKey];
+                          return (
+                            <div key={fk} className="w-full space-y-1">
+                              <label
+                                htmlFor={errKey}
+                                className="block text-xs font-bold uppercase tracking-[0.18em] text-[#9a9a9a]"
+                              >
+                                {f.label}
+                                {f.is_required && <span className="text-[#c9a465]"> *</span>}
+                              </label>
+                              <div className="flex items-baseline gap-2">
+                                <input
+                                  id={errKey}
+                                  type="number"
+                                  inputMode="decimal"
+                                  min="0"
+                                  step="0.25"
+                                  placeholder="0"
+                                  value={measurements[lineKey]?.[fk] ?? ""}
+                                  onChange={(e) => setMeasurementValue(lineKey, fk, e.target.value)}
+                                  className={`w-full bg-transparent border-b pb-2 pt-1 text-sm font-inter text-[#1a1a1a] placeholder:text-[#9a9a9a]/40 focus:outline-none transition-all duration-300 rounded-none ${
+                                    err ? "border-red-500 focus:border-red-500" : "border-[#e8e0d5] focus:border-[#c9a465]"
+                                  }`}
+                                />
+                                <span className="text-[10px] uppercase tracking-widest text-[#9a9a9a] font-semibold">
+                                  in
+                                </span>
+                              </div>
+                              {err && <p className="text-xs text-red-500 font-inter mt-0.5">{err}</p>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Right Column Summary */}
           <div className="lg:col-span-5 bg-[#faf8f5] border border-[#e8e0d5] p-8 space-y-6">
             <h2 className="text-sm font-medium text-[#1a1a1a] tracking-wide select-none">
-              03 Order Summary
+              Order Summary
             </h2>
 
             {/* Cart Items list */}

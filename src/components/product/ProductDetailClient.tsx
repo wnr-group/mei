@@ -116,6 +116,29 @@ export default function ProductDetailClient({ product, selectedColorId, onColorC
         </div>
       )}
 
+      {/* Measurements required for stitched orders */}
+      {selectedStitching === "stitched" && product.measurementFields.length > 0 && (
+        <div className="space-y-3 border border-[#e8e0d5] bg-[#faf8f5] p-4">
+          <span className="text-xs uppercase tracking-widest font-bold text-[#1a1a1a]">
+            Measurements Required
+          </span>
+          <p className="text-xs text-[#4a4a4a]">
+            Our team will collect these measurements after your order. Fields marked * are required.
+          </p>
+          <ul className="flex flex-wrap gap-2">
+            {product.measurementFields.map((f) => (
+              <li
+                key={f.key === "custom" ? `custom-${f.label}` : f.key}
+                className="text-xs font-medium text-[#4a4a4a] border border-[#e8e0d5] bg-white px-3 py-1.5"
+              >
+                {f.label}
+                {f.is_required && <span className="text-[#c9a465] ml-0.5">*</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Color variant selector */}
       {hasColors && (
         <div className="space-y-3">

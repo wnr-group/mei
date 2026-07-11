@@ -26,6 +26,8 @@ const baseRow = (o: Record<string, unknown> = {}) => ({
   name: "Test Piece",
   slug: "test-piece",
   price: 150000,
+  price_unstitched: null,
+  price_stitched: null,
   short_description: "Short",
   description: "Full description.",
   work_types: ["Zardosi"],

@@ -175,6 +175,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_active: boolean
+          measurement_template_id: string | null
           name: string
           slug: string
           sort_order: number
@@ -188,6 +189,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          measurement_template_id?: string | null
           name: string
           slug: string
           sort_order?: number
@@ -201,6 +203,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          measurement_template_id?: string | null
           name?: string
           slug?: string
           sort_order?: number
@@ -297,6 +300,7 @@ export type Database = {
           help_text: string | null
           id: string
           is_required: boolean
+          label: string | null
           sort_order: number
           template_id: string
         }
@@ -306,6 +310,7 @@ export type Database = {
           help_text?: string | null
           id?: string
           is_required?: boolean
+          label?: string | null
           sort_order?: number
           template_id: string
         }
@@ -315,6 +320,7 @@ export type Database = {
           help_text?: string | null
           id?: string
           is_required?: boolean
+          label?: string | null
           sort_order?: number
           template_id?: string
         }
@@ -491,29 +497,32 @@ export type Database = {
         Row: {
           field_key: Database["public"]["Enums"]["measurement_field_key"]
           id: string
+          label: string | null
           notes: string | null
           order_item_id: string
           recorded_at: string
           recorded_by: string | null
-          value_cm: number
+          value_in: number
         }
         Insert: {
           field_key: Database["public"]["Enums"]["measurement_field_key"]
           id?: string
+          label?: string | null
           notes?: string | null
           order_item_id: string
           recorded_at?: string
           recorded_by?: string | null
-          value_cm: number
+          value_in: number
         }
         Update: {
           field_key?: Database["public"]["Enums"]["measurement_field_key"]
           id?: string
+          label?: string | null
           notes?: string | null
           order_item_id?: string
           recorded_at?: string
           recorded_by?: string | null
-          value_cm?: number
+          value_in?: number
         }
         Relationships: [
           {
@@ -888,15 +897,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      product_colors: {
-        Row: { id: string; product_id: string; label: string; hex_code: string | null; swatch_image_url: string | null; sort_order: number; created_at: string; deleted_at: string | null }
-        Insert: { id?: string; product_id: string; label: string; hex_code?: string | null; swatch_image_url?: string | null; sort_order?: number }
-        Update: { label?: string; hex_code?: string | null; swatch_image_url?: string | null; sort_order?: number; deleted_at?: string | null }
-      }
-      enquiries: {
-        Row: { id: string; name: string; email: string; phone: string | null; occasion: string | null; budget: string | null; message: string; measurements: Json | null; reference_images: Json | null; status: 'NEW' | 'REPLIED' | 'CLOSED'; admin_reply: string | null; replied_at: string | null; replied_by: string | null; created_at: string }
-        Insert: { id?: string; name: string; email: string; phone?: string | null; occasion?: string | null; budget?: string | null; message: string; measurements?: Json | null; reference_images?: Json | null; status?: 'NEW' | 'REPLIED' | 'CLOSED' }
-        Update: { status?: 'NEW' | 'REPLIED' | 'CLOSED'; admin_reply?: string | null; replied_at?: string | null; replied_by?: string | null; measurements?: Json | null; reference_images?: Json | null }
       }
       products: {
         Row: {
@@ -1360,6 +1360,7 @@ export type Database = {
         | "knee"
         | "calf"
         | "ankle"
+        | "custom"
       media_type: "IMAGE" | "VIDEO"
       notification_job_status:
         | "PENDING"
@@ -1548,6 +1549,7 @@ export const Constants = {
         "knee",
         "calf",
         "ankle",
+        "custom",
       ],
       media_type: ["IMAGE", "VIDEO"],
       notification_job_status: [
