@@ -37,6 +37,12 @@ const baseRow = (o: Record<string, unknown> = {}) => ({
   deleted_at: null,
   categories: { id: "cat1", name: "Lehengas", slug: "lehengas" },
   product_media: [] as ReturnType<typeof baseMedia>[],
+  is_featured: false,
+  is_new_arrival: false,
+  product_code: "MEI-TEST1",
+  has_variants: false,
+  size_system_id: null,
+  supported_customization_types: [] as ("UNSTITCHED" | "SEMI_STITCHED" | "STANDARD_SIZE" | "CUSTOM_TAILORED")[],
   product_colors: [] as Array<{
     id: string; label: string; hex_code: string | null;
     swatch_image_url: string | null; sort_order: number; deleted_at: string | null;

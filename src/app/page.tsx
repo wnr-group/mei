@@ -31,7 +31,7 @@ const isSupabaseUrl = (url?: string | null) => {
 export default async function Home() {
   const [categories, products,banners] = await Promise.all([
     getCategories(),
-    getProducts({ limit: 8 }),
+    getProducts({ limit: 8, isFeatured: true }),
     getBanners()
   ]);
 
@@ -109,7 +109,7 @@ export default async function Home() {
               No products available at the moment.
             </p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 grid-rows-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {products.map((prod) => (
                 <ProductCard key={prod.id} product={prod} />
               ))}

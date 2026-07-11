@@ -42,18 +42,21 @@ export type Product = {
   name: string;
   slug: string;
   price: number;
-  short_description: string | null;   // was: shortDescription
+  short_description: string | null; // was: shortDescription
   description: string | null;
-  work_types: string[];               // was: craftType: string
+  work_types: string[]; // was: craftType: string
   status: ProductStatus;
   category_id: string | null;         // was: categoryId
   category: Pick<Category, "id" | "name" | "slug"> | null;  // was: categoryName
   image_url: string | null;           // primary image fallback from products table
   images: string[];                   // urls from product_media, sorted by sort_order
+  is_featured?: boolean;
+  is_new_arrival?: boolean;
   colors: StorefrontColor[];           // color palette with swatches
   coloredMedia: { url: string; color_id: string | null }[];  // media with color associations
   // REMOVED: inStock (no DB equivalent — MEI is enquiry-based)
 };
+
 
 export type OrderItem = {
   id: string;
