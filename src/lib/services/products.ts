@@ -145,7 +145,7 @@ async function fetchTemplateFields(
     console.error("[ProductsService:fetchTemplateFields]", error);
     return [];
   }
-  return (data as FieldRow[]).map((f) => ({
+  return ((data as FieldRow[] | null) ?? []).map((f) => ({
     key: f.field_key,
     label:
       f.field_key === "custom"
