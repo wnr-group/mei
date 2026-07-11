@@ -44,7 +44,7 @@ export default function CartPage() {
             Your Cart
           </h1>
           <p className="text-sm text-[#9a9a9a] uppercase tracking-wider mt-1 font-inter">
-            {items.length === 1 ? "1 Item" : `${items.length} items`} 
+            {items.length === 1 ? "1 Item" : `${items.length} items`}
           </p>
         </div>
 
@@ -84,80 +84,85 @@ export default function CartPage() {
             {/* Items Column */}
             <div className="lg:col-span-8 space-y-6">
               {items.map((item) => {
-                const lineKey = item.color_id ? `${item.id}:${item.color_id}` : item.id;
+                const lineKey = `${item.id}:${item.color_id ?? ""}:${item.stitching_type ?? ""}`;
                 return (
-                <div
-                  key={lineKey}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-[#e8e0d5]/40 pb-6 gap-6 font-inter"
-                >
-                  <div className="flex items-center space-x-6">
-                    {/* Item Image */}
-                    <div className="relative w-24 h-32 bg-[#faf8f5] flex-shrink-0 border border-[#e8e0d5]/40 flex items-center justify-center">
-                      {item.image ? (
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          fill
-                          sizes="96px"
-                          className="object-cover"
-                          unoptimized={isSupabaseUrl(item.image)}
-                        />
-                      ) : (
-                        <span className="text-[#9a9a9a] text-[10px] uppercase tracking-wider font-semibold select-none">
-                          No Image
+                  <div
+                    key={lineKey}
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-[#e8e0d5]/40 pb-6 gap-6 font-inter"
+                  >
+                    <div className="flex items-center space-x-6">
+                      {/* Item Image */}
+                      <div className="relative w-24 h-32 bg-[#faf8f5] flex-shrink-0 border border-[#e8e0d5]/40 flex items-center justify-center">
+                        {item.image ? (
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            fill
+                            sizes="96px"
+                            className="object-cover"
+                            unoptimized={isSupabaseUrl(item.image)}
+                          />
+                        ) : (
+                          <span className="text-[#9a9a9a] text-[10px] uppercase tracking-wider font-semibold select-none">
+                            No Image
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Details */}
+                      <div className="space-y-1">
+                        <span className="text-xs uppercase tracking-widest text-[#c9a465] font-semibold">
+                          {item.work_types?.[0] ?? ""}
                         </span>
-                      )}
-                    </div>
-
-                    {/* Details */}
-                    <div className="space-y-1">
-                      <span className="text-xs uppercase tracking-widest text-[#c9a465] font-semibold">
-                        {item.work_types?.[0] ?? ""}
-                      </span>
-                      <h3 className="text-base font-light text-[#1a1a1a] font-inter">
-                        {item.name}
-                      </h3>
-                      {item.color_label && (
-                        <p className="text-xs text-[#9a9a9a] uppercase tracking-widest font-medium">
-                          Colour: {item.color_label}
+                        <h3 className="text-base font-light text-[#1a1a1a] font-inter">
+                          {item.name}
+                        </h3>
+                        {item.color_label && (
+                          <p className="text-xs text-[#9a9a9a] uppercase tracking-widest font-medium">
+                            Colour: {item.color_label}
+                          </p>
+                        )}
+                        {item.stitching_type && (
+                          <p className="text-xs text-[#9a9a9a] uppercase tracking-widest font-medium">
+                            {item.stitching_type === "stitched" ? "Stitched" : "Unstitched"}
+                          </p>
+                        )}
+                        <p className="text-sm font-light text-[#1a1a1a]">
+                          {formatCurrency(item.price)}
                         </p>
-                      )}
-                      <p className="text-sm font-light text-[#1a1a1a]">
-                        {formatCurrency(item.price)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Quantity and Actions Wrapper */}
-                  <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-8">
-                    {/* Quantity Selector */}
-                    <div className="flex items-center border border-[#e8e0d5] bg-[#faf8f5]">
-                      <button
-                        onClick={() => updateQuantity(item.id, item.color_id, item.quantity - 1)}
-                        className="px-3.5 py-1.5 text-[#1a1a1a] hover:text-[#c9a465] transition-colors cursor-pointer text-sm"
-                      >
-                        -
-                      </button>
-                      <span className="px-4 text-xs font-semibold text-[#1a1a1a]">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => updateQuantity(item.id, item.color_id, item.quantity + 1)}
-                        className="px-3.5 py-1.5 text-[#1a1a1a] hover:text-[#c9a465] transition-colors cursor-pointer text-sm"
-                      >
-                        +
-                      </button>
+                      </div>
                     </div>
 
-                    {/* Remove button */}
-                    <button
-                      onClick={() => removeItem(item.id, item.color_id)}
-                      className="text-sm uppercase tracking-widest font-medium text-[#9a9a9a] hover:text-red-500 transition-colors cursor-pointer"
-                    >
-                      Remove
-                    </button>
+                    {/* Quantity and Actions Wrapper */}
+                    <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-8">
+                      {/* Quantity Selector */}
+                      <div className="flex items-center border border-[#e8e0d5] bg-[#faf8f5]">
+                        <button
+                          onClick={() => updateQuantity(item.id, item.color_id, item.stitching_type, item.quantity - 1)}
+                          className="px-3.5 py-1.5 text-[#1a1a1a] hover:text-[#c9a465] transition-colors cursor-pointer text-sm"
+                        >
+                          -
+                        </button>
+                        <span className="px-4 text-xs font-semibold text-[#1a1a1a]">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateQuantity(item.id, item.color_id, item.stitching_type, item.quantity + 1)}
+                          className="px-3.5 py-1.5 text-[#1a1a1a] hover:text-[#c9a465] transition-colors cursor-pointer text-sm"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      {/* Remove button */}
+                      <button
+                        onClick={() => removeItem(item.id, item.color_id, item.stitching_type)}
+                        className="text-sm uppercase tracking-widest font-medium text-[#9a9a9a] hover:text-red-500 transition-colors cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
-                </div>
                 );
               })}
             </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { getOrderById } from "@/lib/services/orders-server";
 import { formatCurrency } from "@/lib/utils/format";
@@ -6,6 +7,9 @@ import { formatCurrency } from "@/lib/utils/format";
 interface Props {
   params: Promise<{ id: string }>;
 }
+
+const isSupabaseUrl = (url?: string | null) =>
+  !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
 
 export const metadata: Metadata = {
   robots: {
@@ -92,10 +96,29 @@ export default async function OrderDetailPage({ params }: Props) {
               Items Ordered
             </h2>
             <div className="space-y-4">
-              {order.items.map((item) => (
-                <div key={item.id} className="flex justify-between items-start gap-4">
+              {order.items.map((item) => {
+                const thumb = (
+                  <div className="relative w-16 h-20 flex-shrink-0 overflow-hidden bg-white border border-[#e8e0d5] flex items-center justify-center">
+                    {item.image_url ? (
+                      <Image
+                        src={item.image_url}
+                        alt={item.product_name}
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                        unoptimized={isSupabaseUrl(item.image_url)}
+                      />
+                    ) : (
+                      <span className="text-[#9a9a9a] text-[8px] uppercase tracking-wider font-semibold select-none text-center px-1">
+                        No Image
+                      </span>
+                    )}
+                  </div>
+                );
+
+                const details = (
                   <div className="space-y-0.5">
-                    <p className="text-sm font-semibold text-[#1a1a1a] leading-tight">
+                    <p className="text-sm font-semibold text-[#1a1a1a] leading-tight group-hover:text-[#c9a465] transition-colors">
                       {item.product_name}
                     </p>
                     {item.color_label && (
@@ -107,11 +130,30 @@ export default async function OrderDetailPage({ params }: Props) {
                       QTY: {item.quantity}
                     </p>
                   </div>
-                  <p className="text-sm font-semibold text-[#1a1a1a] whitespace-nowrap">
-                    {formatCurrency(item.unit_price * item.quantity)}
-                  </p>
-                </div>
-              ))}
+                );
+
+                return (
+                  <div key={item.id} className="flex justify-between items-start gap-4">
+                    {item.slug ? (
+                      <Link
+                        href={`/shop/${item.slug}`}
+                        className="group flex items-start gap-4 min-w-0"
+                      >
+                        {thumb}
+                        {details}
+                      </Link>
+                    ) : (
+                      <div className="flex items-start gap-4 min-w-0">
+                        {thumb}
+                        {details}
+                      </div>
+                    )}
+                    <p className="text-sm font-semibold text-[#1a1a1a] whitespace-nowrap">
+                      {formatCurrency(item.unit_price * item.quantity)}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
             <hr className="border-[#e8e0d5]" />
             <div className="space-y-2 text-xs">

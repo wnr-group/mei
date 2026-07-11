@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { unstable_cache } from "next/cache";
 import type { Database } from "@/lib/supabase/database";
-import type { Product } from "@/types";
+import type { Product, MeasurementField } from "@/types";
 
 // ── Generated DB types ─────────────────────────────────────────────────────
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
@@ -12,17 +12,17 @@ type ProductColorRow = Database["public"]["Tables"]["product_colors"]["Row"];
 type ProductWithRelations = ProductRow & {
   categories: Pick<CategoryRow, "id" | "name" | "slug"> | null;
   product_media:
-    | Pick<
-        ProductMediaRow,
-        "url" | "color_id" | "sort_order" | "is_primary" | "deleted_at"
-      >[]
-    | undefined;
+  | Pick<
+    ProductMediaRow,
+    "url" | "color_id" | "sort_order" | "is_primary" | "deleted_at"
+  >[]
+  | undefined;
   product_colors:
-    | Pick<
-        ProductColorRow,
-        "id" | "label" | "hex_code" | "swatch_image_url" | "sort_order" | "deleted_at"
-      >[]
-    | undefined;
+  | Pick<
+    ProductColorRow,
+    "id" | "label" | "hex_code" | "swatch_image_url" | "sort_order" | "deleted_at"
+  >[]
+  | undefined;
 };
 
 // ── Public API ─────────────────────────────────────────────────────────────
@@ -46,18 +46,18 @@ export function _mapDbRowToProduct(row: ProductWithRelations): Product {
     activeMedia.length > 0
       ? activeMedia.map((m) => m.url)
       : row.image_url
-      ? [row.image_url]
-      : [];
+        ? [row.image_url]
+        : [];
 
   const coloredMedia =
     activeMedia.length > 0
       ? activeMedia.map((m) => ({
-          url: m.url,
-          color_id: m.color_id,
-        }))
+        url: m.url,
+        color_id: m.color_id,
+      }))
       : row.image_url
-      ? [{ url: row.image_url, color_id: null }]
-      : [];
+        ? [{ url: row.image_url, color_id: null }]
+        : [];
 
   const colors = (row.product_colors ?? [])
     .filter((c) => c.deleted_at === null)
@@ -75,6 +75,8 @@ export function _mapDbRowToProduct(row: ProductWithRelations): Product {
     name: row.name,
     slug: row.slug ?? "",
     price: row.price,
+    price_unstitched: row.price_unstitched,
+    price_stitched: row.price_stitched,
     short_description: row.short_description,
     description: row.description,
     work_types: row.work_types ?? [],
@@ -87,7 +89,97 @@ export function _mapDbRowToProduct(row: ProductWithRelations): Product {
     is_new_arrival: row.is_new_arrival,
     colors,
     coloredMedia,
+    measurementFields: [], // populated only on the detail page via resolveMeasurementFields
   };
+}
+
+// ── Measurement field resolution (override → primary category template) ─────
+
+const FIELD_LABELS: Record<string, string> = {
+  bust: "Bust",
+  upper_bust: "Upper Bust",
+  under_bust: "Under Bust",
+  waist: "Waist",
+  hip: "Hip",
+  shoulder: "Shoulder",
+  blouse_length: "Blouse Length",
+  sleeve_length: "Sleeve Length",
+  lehenga_length: "Lehenga Length",
+  bottom_length: "Bottom Length",
+  dupatta_length: "Dupatta Length",
+  torso_length: "Torso Length",
+  back_length: "Back Length",
+  front_length: "Front Length",
+  height: "Height",
+  armhole: "Armhole",
+  neck_depth_front: "Neck Depth (Front)",
+  neck_depth_back: "Neck Depth (Back)",
+  neck_circumference: "Neck Circumference",
+  bicep: "Bicep",
+  wrist: "Wrist",
+  elbow: "Elbow",
+  inseam: "Inseam",
+  thigh: "Thigh",
+  knee: "Knee",
+  calf: "Calf",
+  ankle: "Ankle",
+};
+
+type FieldRow = {
+  field_key: string;
+  label: string | null;
+  is_required: boolean;
+  sort_order: number;
+};
+
+async function fetchTemplateFields(
+  supabase: ReturnType<typeof getServiceClient>,
+  templateId: string
+): Promise<MeasurementField[]> {
+  const { data, error } = await supabase
+    .from("measurement_template_fields")
+    .select("field_key, label, is_required, sort_order")
+    .eq("template_id", templateId)
+    .order("sort_order");
+  if (error) {
+    console.error("[ProductsService:fetchTemplateFields]", error);
+    return [];
+  }
+  return ((data as FieldRow[] | null) ?? []).map((f) => ({
+    key: f.field_key,
+    label:
+      f.field_key === "custom"
+        ? (f.label ?? "Custom")
+        : (FIELD_LABELS[f.field_key] ?? f.field_key),
+    is_required: f.is_required,
+  }));
+}
+
+// Resolution rule: a product's own override template wins; otherwise the
+// product's primary category template; otherwise no measurements.
+async function resolveMeasurementFields(
+  supabase: ReturnType<typeof getServiceClient>,
+  productId: string,
+  categoryId: string | null
+): Promise<MeasurementField[]> {
+  const { data: override } = await supabase
+    .from("measurement_templates")
+    .select("id")
+    .eq("product_id", productId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (override?.id) return fetchTemplateFields(supabase, override.id);
+
+  if (!categoryId) return [];
+  const { data: cat } = await supabase
+    .from("categories")
+    .select("measurement_template_id")
+    .eq("id", categoryId)
+    .maybeSingle();
+  if (cat?.measurement_template_id) {
+    return fetchTemplateFields(supabase, cat.measurement_template_id);
+  }
+  return [];
 }
 
 // ── Supabase client (no cookies — safe inside unstable_cache) ──────────────
@@ -234,7 +326,14 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
           console.error("[ProductsService:getProductBySlug]", error);
           throw error;
         }
-        return data ? _mapDbRowToProduct(data as ProductWithRelations) : null;
+        if (!data) return null;
+        const product = _mapDbRowToProduct(data as ProductWithRelations);
+        product.measurementFields = await resolveMeasurementFields(
+          supabase,
+          product.id,
+          product.category_id
+        );
+        return product;
       },
       ["product-by-slug", slug],
       { tags: ["products"], revalidate: 60 }

@@ -11,7 +11,11 @@ function anonClient() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const items: Array<{ product_id: string; quantity: number }> = body.items ?? [];
+    const items: Array<{
+      product_id: string;
+      quantity: number;
+      stitching_type?: "stitched" | "unstitched";
+    }> = body.items ?? [];
 
     if (!items.length) {
       return NextResponse.json({ error: "EMPTY_CART" }, { status: 400 });
@@ -19,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     const { data: products, error } = await anonClient()
       .from("products")
-      .select("id, price")
+      .select("id, price, price_unstitched, price_stitched")
       .in("id", items.map((i) => i.product_id));
 
     if (error || !products) {
@@ -27,17 +31,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "PRODUCT_LOOKUP_FAILED" }, { status: 500 });
     }
 
-    const priceMap = Object.fromEntries(products.map((p) => [p.id, p.price as number]));
+    const productMap = Object.fromEntries(products.map((p) => [p.id, p]));
 
     let subtotal = 0;
     for (const item of items) {
-      const price = priceMap[item.product_id];
-      if (price == null) {
+      const product = productMap[item.product_id];
+      if (product == null) {
         return NextResponse.json({ error: "PRODUCT_NOT_FOUND" }, { status: 400 });
       }
+
+      let price: number;
+      if (item.stitching_type === "stitched" && product.price_stitched != null) {
+        price = product.price_stitched;
+      } else if (item.stitching_type === "unstitched" && product.price_unstitched != null) {
+        price = product.price_unstitched;
+      } else {
+        price = product.price;
+      }
+
       subtotal += price * item.quantity;
     }
-
     // Shipping threshold — mirrors src/lib/config/shipping.ts
     const shipping = subtotal >= 5000 ? 0 : 150;
     const total = subtotal + shipping;

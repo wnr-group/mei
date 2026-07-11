@@ -13,6 +13,12 @@ export interface CreateOrderInput {
     quantity: number;
     color_id?: string;
     color_label?: string;
+    stitching_type?: "stitched" | "unstitched";
+    measurements?: Array<{
+      field_key: string;
+      label?: string | null;
+      value_in: number;
+    }>;
   }>;
   shipping_address: Record<string, string>;
   payment: {

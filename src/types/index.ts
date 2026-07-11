@@ -26,6 +26,17 @@ export type StorefrontColor = {
   sort_order: number;
 };
 
+// A single measurement input a customer fills in for a stitched order.
+// `key` is the enum field_key ('bust', 'custom', …); `label` is the
+// human-facing name (the free-text label for custom fields, otherwise a
+// prettified key). Resolution (override → category template) happens
+// server-side, so the storefront just renders this flat list.
+export type MeasurementField = {
+  key: string;
+  label: string;
+  is_required: boolean;
+};
+
 export type Category = {
   id: string;
   name: string;
@@ -42,6 +53,8 @@ export type Product = {
   name: string;
   slug: string;
   price: number;
+  price_unstitched: number | null;
+  price_stitched: number | null;
   short_description: string | null; // was: shortDescription
   description: string | null;
   work_types: string[]; // was: craftType: string
@@ -54,6 +67,7 @@ export type Product = {
   is_new_arrival?: boolean;
   colors: StorefrontColor[];           // color palette with swatches
   coloredMedia: { url: string; color_id: string | null }[];  // media with color associations
+  measurementFields: MeasurementField[];  // resolved (override → category); empty when none apply
   // REMOVED: inStock (no DB equivalent — MEI is enquiry-based)
 };
 
@@ -99,8 +113,9 @@ export type CartItem = {
   name: string;
   price: number;
   image: string;
-  work_types: string[];   // was: craftType: string
+  work_types: string[];
   quantity: number;
   color_id: string | null;
   color_label: string | null;
+  stitching_type: "stitched" | "unstitched" | null;   // ADD THIS
 };

@@ -43,7 +43,13 @@ const SAMPLE_ROW = {
     city: "Mumbai",
   },
   order_items: [
-    { id: "item-uuid-1", product_name: "Bridal Lehenga", quantity: 1, unit_price: 120000 },
+    {
+      id: "item-uuid-1",
+      product_name: "Bridal Lehenga",
+      quantity: 1,
+      unit_price: 120000,
+      products: { slug: "bridal-lehenga", image_url: "https://cdn.example.com/lehenga.jpg" },
+    },
   ],
 };
 
@@ -83,7 +89,7 @@ describe("getOrderById", () => {
         phone: "+91 98765 43210",
         city: "Mumbai",
       },
-      items: [{ id: "item-uuid-1", product_name: "Bridal Lehenga", quantity: 1, unit_price: 120000, color_label: null }],
+      items: [{ id: "item-uuid-1", product_name: "Bridal Lehenga", quantity: 1, unit_price: 120000, color_label: null, slug: "bridal-lehenga", image_url: "https://cdn.example.com/lehenga.jpg" }],
     };
     expect(result).toEqual(expected);
   });
