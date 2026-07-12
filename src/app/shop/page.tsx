@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Explore Collections",
   description:
     "Discover our premium handcrafted bridal lehengas, couture sarees, and custom outfits tailored for your special occasions.",
+  alternates: { canonical: "/shop" },
 };
 
 export default async function ShopPage() {

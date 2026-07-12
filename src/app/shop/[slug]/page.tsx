@@ -6,6 +6,7 @@ import { getCategoryBySlug } from "@/lib/services/categories";
 import ProductCard from "@/components/shop/ProductCard";
 import ProductDetailBody from "@/components/product/ProductDetailBody";
 import ShopClient from "@/components/shop/ShopClient";
+import { SITE_URL } from "@/lib/config/site";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -24,6 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title,
       description,
+      alternates: { canonical: `/shop/${normalizedSlug}` },
       openGraph: {
         title,
         description,
@@ -48,6 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title,
       description,
+      alternates: { canonical: `/shop/${normalizedSlug}` },
       openGraph: {
         title,
         description,
@@ -83,12 +86,20 @@ export default async function ProductDetailPage({ params }: Props) {
       "@context": "https://schema.org",
       "@type": "Product",
       "name": product.name,
-      "image": product.images?.[0] || product.image_url || "",
+      "image": (product.images?.length ? product.images : [product.image_url].filter(Boolean)) as string[],
       "description": product.description || product.short_description || "",
+      "sku": product.id,
+      "brand": {
+        "@type": "Brand",
+        "name": "MEI Bridal Couture",
+      },
+      "category": product.category?.name ?? undefined,
+      "url": `${SITE_URL}/shop/${normalizedSlug}`,
       "offers": {
         "@type": "Offer",
         "priceCurrency": "INR",
         "price": product.price,
+        "url": `${SITE_URL}/shop/${normalizedSlug}`,
         "availability": "https://schema.org/InStock",
       },
     };
@@ -98,7 +109,7 @@ export default async function ProductDetailPage({ params }: Props) {
         {/* JSON-LD Structured Data */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
         />
         {/* Breadcrumbs */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">

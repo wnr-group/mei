@@ -58,9 +58,9 @@ export default function Header({ products, categories }: { products: Product[]; 
                   priority
                   className="h-9 w-auto mb-1 select-none"
                 />
-                <h1 className="text-3xl font-bold tracking-[0.25em] uppercase text-[#0B5563] group-hover:text-[#14606E] transition-colors duration-300 font-inter select-none leading-none text-center">
+                <span className="block text-3xl font-bold tracking-[0.25em] uppercase text-[#0B5563] group-hover:text-[#14606E] transition-colors duration-300 font-inter select-none leading-none text-center">
                   MEI
-                </h1>
+                </span>
                 <span className="block text-[10px] font-bold uppercase tracking-[0.35em] text-[#c9a465] group-hover:text-[#d4b87a] transition-colors duration-300 mt-1 font-inter text-center">
                   BRIDAL COUTURE
                 </span>

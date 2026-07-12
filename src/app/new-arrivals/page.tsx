@@ -1,9 +1,25 @@
+import type { Metadata } from "next";
 import { getProducts } from "@/lib/services/products";
 import ProductCard from "@/components/shop/ProductCard";
 import Link from "next/link";
 
 interface NewArrivalsPageProps {
   searchParams: Promise<{ page?: string }> | { page?: string };
+}
+
+export async function generateMetadata({
+  searchParams,
+}: NewArrivalsPageProps): Promise<Metadata> {
+  const resolved = await searchParams;
+  const page = Number(resolved.page) || 1;
+  return {
+    title: "New Arrivals — Season 2026",
+    description:
+      "The latest bridal lehengas, sarees, and couture from the MEI atelier. Explore our newest handcrafted masterpieces for the modern bride.",
+    alternates: { canonical: "/new-arrivals" },
+    // Paginated views are duplicate-ish; only index the first page.
+    robots: page > 1 ? { index: false, follow: true } : undefined,
+  };
 }
 
 export default async function NewArrivalsPage({ searchParams }: NewArrivalsPageProps) {

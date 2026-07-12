@@ -8,6 +8,7 @@ import WhatsAppButton from "@/components/layout/WhatsAppButton";
 import { getProducts } from "@/lib/services/products";
 import { getCategories } from "@/lib/services/categories";
 import { getSetting } from "@/lib/services/settings";
+import { SITE_URL, SITE_NAME } from "@/lib/config/site";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -22,7 +23,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://mei-bridal.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "MEI Bridal Couture — Handcrafted Elegance",
     template: "%s | MEI Bridal Couture",
@@ -33,16 +34,8 @@ export const metadata: Metadata = {
     title: "MEI Bridal Couture — Handcrafted Elegance",
     description:
       "Premium Indian bridal wear — Lehengas, Sarees, and Bespoke Couture. Handcrafted with Aari, Zardosi, and Mirror embroidery.",
-    url: "https://mei-bridal.com",
-    siteName: "MEI Bridal Couture",
-    images: [
-      {
-        url: "/images/hero_lehenga.png",
-        width: 1200,
-        height: 630,
-        alt: "MEI Bridal Couture Hero Backdrop",
-      },
-    ],
+    url: SITE_URL,
+    siteName: SITE_NAME,
     locale: "en_IN",
     type: "website",
   },
@@ -51,7 +44,6 @@ export const metadata: Metadata = {
     title: "MEI Bridal Couture — Handcrafted Elegance",
     description:
       "Premium Indian bridal wear — Lehengas, Sarees, and Bespoke Couture. Handcrafted with Aari, Zardosi, and Mirror embroidery.",
-    images: ["/images/hero_lehenga.png"],
   },
 };
 
@@ -67,9 +59,43 @@ export default async function RootLayout({
     getSetting("promo_strip_text"),
   ]);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${SITE_URL}/#organization`,
+        name: SITE_NAME,
+        url: SITE_URL,
+        logo: `${SITE_URL}/images/elephant-gold.png`,
+        email: "admin@couturemei.com",
+        telephone: "+91 99301 00431",
+        description:
+          "Premium Indian bridal wear — Lehengas, Sarees, and Bespoke Couture. Handcrafted with Aari, Zardosi, and Mirror embroidery.",
+        address: {
+          "@type": "PostalAddress",
+          addressCountry: "IN",
+        },
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        url: SITE_URL,
+        name: SITE_NAME,
+        publisher: { "@id": `${SITE_URL}/#organization` },
+      },
+    ],
+  };
+
   return (
     <html lang="en" className={`${cormorant.variable} ${inter.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-white text-[#1A1A1A] antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+          }}
+        />
         <PromoStrip defaultText={promoText ?? undefined} />
         <Header products={products} categories={categories} />
         <div className="flex-1 flex flex-col">{children}</div>

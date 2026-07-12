@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "The Atelier — Our Story & Craftsmanship",
   description:
     "Discover the heritage behind MEI Bridal Couture. Learn about our master karigars and traditional embroidery techniques like Zardosi, Aari, and Mirror work.",
+  alternates: { canonical: "/atelier" },
 };
 
 export default function AtelierPage() {

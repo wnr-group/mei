@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "MEI Bridal Couture — Handcrafted Elegance",
   description:
     "Premium Indian bridal wear — Lehengas, Sarees, and Bespoke Couture. Handcrafted with traditional Aari, Zardosi, and Mirror embroidery.",
+  alternates: { canonical: "/" },
 };
 import ProductCard from "@/components/shop/ProductCard";
 import Button from "@/components/ui/Button";
