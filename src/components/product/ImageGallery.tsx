@@ -168,16 +168,6 @@ export default function ImageGallery({
             )}
           </button>
         ))}
-
-        {/* Fill remaining slots with empty placeholders */}
-        {Array.from({ length: Math.max(0, 4 - thumbnails.length) }).map(
-          (_, i) => (
-            <div
-              key={`empty-${i}`}
-              className="h-20 bg-[#faf8f5] border border-[#e8e0d5]/40"
-            />
-          )
-        )}
       </div>
     </div>
   );

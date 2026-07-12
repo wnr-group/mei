@@ -8,7 +8,7 @@ export default function Footer({ categories }: { categories: Category[] }) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Brand Column */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold  font-inter uppercase text-[#C9A465]">
+            <h3 className="text-2xl font-bold  font-inter uppercase text-[#0B5563]">
               MEI BRIDAL COUTURE
             </h3>
             <p className="text-sm text-[#4a4a4a] leading-relaxed font-inter">
@@ -24,27 +24,18 @@ export default function Footer({ categories }: { categories: Category[] }) {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/about"
+                  href="/atelier"
                   className="text-sm text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
                 >
-                  About Us
+                  The Atelier
                 </Link>
               </li>
-             
               <li>
                 <Link
-                  href="/craftmanship"
+                  href="/contact"
                   className="text-sm text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
                 >
-                  Craftsmanship
-                </Link>
-              </li>
-               <li>
-                <Link
-                  href="/faq"
-                  className="text-sm text-[#4a4a4a] hover:text-[#c9a465] transition-colors duration-300 font-inter"
-                >
-                  FAQs
+                  Contact Us
                 </Link>
               </li>
             </ul>
@@ -77,8 +68,8 @@ export default function Footer({ categories }: { categories: Category[] }) {
               CONTACT
             </h4>
             <ul className="space-y-2 text-sm text-[#4a4a4a] font-inter leading-relaxed">
-              <li>info@meibridal.com</li>
-              <li>+91 98765 43210</li>
+              <li>admin@couturemei.com</li>
+              <li>+91 99301 00431</li>
             </ul>
           </div>
         </div>

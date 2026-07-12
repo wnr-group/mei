@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useCartStore } from "@/store/cart";
 import { useWishlistStore } from "@/store/wishlist";
@@ -48,8 +49,16 @@ export default function Header({ products, categories }: { products: Product[]; 
 
             {/* Logo (Centered) */}
             <div className="flex-1 text-center md:absolute md:left-1/2 md:-translate-x-1/2 flex flex-col items-center">
-              <Link href="/" className="inline-block group">
-                <h1 className="text-3xl font-bold tracking-[0.25em] uppercase text-[#c9a465] group-hover:text-[#d4b87a] transition-colors duration-300 font-inter select-none leading-none text-center">
+              <Link href="/" className="inline-flex flex-col items-center group">
+                <Image
+                  src="/images/elephant-gold.png"
+                  alt="MEI Bridal Couture"
+                  width={280}
+                  height={164}
+                  priority
+                  className="h-9 w-auto mb-1 select-none"
+                />
+                <h1 className="text-3xl font-bold tracking-[0.25em] uppercase text-[#0B5563] group-hover:text-[#14606E] transition-colors duration-300 font-inter select-none leading-none text-center">
                   MEI
                 </h1>
                 <span className="block text-[10px] font-bold uppercase tracking-[0.35em] text-[#c9a465] group-hover:text-[#d4b87a] transition-colors duration-300 mt-1 font-inter text-center">

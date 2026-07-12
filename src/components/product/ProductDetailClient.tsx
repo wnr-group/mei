@@ -203,7 +203,7 @@ export default function ProductDetailClient({ product, selectedColorId, onColorC
         {isInCart ? "In Cart" : "Add to Cart"}
       </button>
 
-      <a href={`https://wa.me/919876543210?text=Hi,%20I'm%20interested%20in%20inquiring%20about%20${encodeURIComponent(product.name)}${selectedColor ? `%20(${encodeURIComponent(selectedColor.label)})` : ""}.`}
+      <a href={`https://wa.me/919930100431?text=Hi,%20I'm%20interested%20in%20inquiring%20about%20${encodeURIComponent(product.name)}${selectedColor ? `%20(${encodeURIComponent(selectedColor.label)})` : ""}.`}
         target="_blank"
         rel="noreferrer"
         className="w-full border border-[#25d366] text-[#25d366] hover:bg-[#25d366]/5 py-4 text-sm font-semibold uppercase tracking-widest transition-colors duration-300 cursor-pointer flex items-center justify-center gap-2"

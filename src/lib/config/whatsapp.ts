@@ -1,5 +1,4 @@
-export const WHATSAPP_NUMBER =
-  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "919876543210";
+export const WHATSAPP_NUMBER = "919930100431";
 
 export function isValidWhatsAppNumber(number: string): boolean {
   const digitOnly = number.replace(/\D/g, "");
