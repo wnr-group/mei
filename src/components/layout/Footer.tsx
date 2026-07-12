@@ -67,10 +67,31 @@ export default function Footer({ categories }: { categories: Category[] }) {
             <h4 className="text-xs font-inter font-semibold uppercase tracking-widest text-[#c9a465]">
               CONTACT
             </h4>
-            <ul className="space-y-2 text-sm text-[#4a4a4a] font-inter leading-relaxed">
-              <li>admin@couturemei.com</li>
-              <li>+91 99301 00431</li>
-            </ul>
+            <address className="space-y-2 text-sm text-[#4a4a4a] font-inter leading-relaxed not-italic">
+              <p>
+                17 Lourdh Swamy Pillai Street, Ayyappan Nagar,
+                <br />
+                K.K. Nagar (near Perumal Temple),
+                <br />
+                Tiruchirappalli, Tamil Nadu 620021
+              </p>
+              <p>
+                <a
+                  href="mailto:admin@couturemei.com"
+                  className="hover:text-[#c9a465] transition-colors duration-300"
+                >
+                  Email us
+                </a>
+              </p>
+              <p>
+                <a
+                  href="tel:+919930100431"
+                  className="hover:text-[#c9a465] transition-colors duration-300"
+                >
+                  +91 99301 00431
+                </a>
+              </p>
+            </address>
           </div>
         </div>
 

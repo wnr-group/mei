@@ -59,6 +59,15 @@ export default async function RootLayout({
     getSetting("promo_strip_text"),
   ]);
 
+  const postalAddress = {
+    "@type": "PostalAddress",
+    streetAddress: "17 Lourdh Swamy Pillai Street, Ayyappan Nagar, K.K. Nagar",
+    addressLocality: "Tiruchirappalli",
+    addressRegion: "Tamil Nadu",
+    postalCode: "620021",
+    addressCountry: "IN",
+  };
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -72,10 +81,21 @@ export default async function RootLayout({
         telephone: "+91 99301 00431",
         description:
           "Premium Indian bridal wear — Lehengas, Sarees, and Bespoke Couture. Handcrafted with Aari, Zardosi, and Mirror embroidery.",
-        address: {
-          "@type": "PostalAddress",
-          addressCountry: "IN",
-        },
+        address: postalAddress,
+      },
+      {
+        "@type": ["Store", "LocalBusiness"],
+        "@id": `${SITE_URL}/#localbusiness`,
+        name: SITE_NAME,
+        image: `${SITE_URL}/opengraph-image.png`,
+        url: SITE_URL,
+        email: "admin@couturemei.com",
+        telephone: "+91 99301 00431",
+        priceRange: "₹₹₹",
+        description:
+          "Premium Indian bridal wear — Lehengas, Sarees, and Bespoke Couture. Handcrafted with Aari, Zardosi, and Mirror embroidery.",
+        address: postalAddress,
+        parentOrganization: { "@id": `${SITE_URL}/#organization` },
       },
       {
         "@type": "WebSite",

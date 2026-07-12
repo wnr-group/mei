@@ -7,7 +7,7 @@ import HeroBanner from "@/components/home/HeroBanner";
 
 
 export const metadata: Metadata = {
-  title: "MEI Bridal Couture — Handcrafted Elegance",
+  title: "MEI Bridal Couture — Handcrafted Lehengas & Bridal Sarees",
   description:
     "Premium Indian bridal wear — Lehengas, Sarees, and Bespoke Couture. Handcrafted with traditional Aari, Zardosi, and Mirror embroidery.",
   alternates: { canonical: "/" },
@@ -45,10 +45,16 @@ export default async function Home() {
       {/* Category Grid */}
       <section className="py-24 bg-white border-b border-[#e8e0d5]/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          <div className="text-center">
+          <div className="text-center max-w-2xl mx-auto space-y-4">
             <h2 className="text-3xl font-light tracking-[0.15em] text-[#1a1a1a] font-cormorant uppercase">
               Shop by Category
             </h2>
+            <p className="text-sm sm:text-base text-[#4a4a4a] leading-relaxed font-inter font-light">
+              From heirloom bridal lehengas to hand-embroidered sarees and reception
+              gowns, every MEI collection is designed for the modern Indian bride who
+              values heritage craftsmanship. Explore our curated categories to find
+              the silhouette that carries your story down the aisle.
+            </p>
           </div>
 
           {categories.length === 0 ? (
@@ -131,10 +137,17 @@ export default async function Home() {
       {/* Our Craft Section */}
       <section className="py-24 bg-white border-b border-[#e8e0d5]/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          <div className="text-center">
+          <div className="text-center max-w-2xl mx-auto space-y-4">
             <h2 className="text-3xl font-light tracking-[0.15em] text-[#1a1a1a] font-cormorant uppercase">
               Our Craft
             </h2>
+            <p className="text-sm sm:text-base text-[#4a4a4a] leading-relaxed font-inter font-light">
+              Each garment is brought to life in our atelier by master artisans who
+              have spent decades perfecting traditional Indian embroidery. Aari,
+              Zardosi, mirror work, thread embroidery, and intricate cut work are
+              layered by hand over weeks of patient labour — techniques passed down
+              through generations and reimagined for contemporary brides.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
