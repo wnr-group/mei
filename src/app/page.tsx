@@ -106,9 +106,11 @@ export default async function Home() {
             <h2 className="text-3xl font-light tracking-[0.15em] text-[#1a1a1a] font-cormorant uppercase">
               Featured Pieces
             </h2>
-            <Button variant="gold" size="sm">
-              View All
-            </Button>
+            <Link href="/shop">
+              <Button variant="gold" size="sm">
+                View All
+              </Button>
+            </Link>
           </div>
 
           {products.length === 0 ? (
