@@ -74,8 +74,8 @@ function CraftCard({ craft }: { craft: CraftItem }) {
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none" />
 
-      <div className="text-center z-10">
-        <span className="text-xs font-bold uppercase tracking-[0.25em] text-white/90">
+      <div className="text-center z-10 px-4 space-y-2">
+        <span className="block text-lg sm:text-xl lg:text-2xl font-light tracking-wider text-white uppercase">
           {craft.label}
         </span>
       </div>

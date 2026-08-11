@@ -1,12 +1,13 @@
 /* src/components/features/crafts-v2/CreativeCraftsGrid.module.css */
 .card {
-  box-shadow: 0 10px 24px -18px rgba(13, 13, 17, 0.22);
-  transition: box-shadow 650ms cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 16px 40px -12px rgba(13, 13, 17, 0.35);
+  transition: all 500ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .card:hover {
-    box-shadow: 0 14px 30px -18px rgba(13, 13, 17, 0.28);
+    box-shadow: 0 24px 48px -8px rgba(13, 13, 17, 0.45);
+    transform: translateY(-2px);
   }
 }
 
