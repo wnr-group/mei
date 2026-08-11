@@ -1,0 +1,18 @@
+/* src/components/features/crafts-v2/CreativeCraftsGrid.module.css */
+.card {
+  box-shadow: 0 10px 24px -18px rgba(13, 13, 17, 0.22);
+  transition: box-shadow 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    box-shadow: 0 14px 30px -18px rgba(13, 13, 17, 0.28);
+  }
+}
+
+.imageWrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+}
