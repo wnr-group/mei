@@ -22,12 +22,12 @@ const isSupabaseUrl = (url?: string | null) => {
   return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
 };
  const crafts = [
-  { label: "Aari Work", image: "/images/aariwork.jpg" },
-  { label: "Zardosi", image: "/images/zardosi.webp" },
-  { label: "Mirror Work", image: "/images/mirror.jpg" }, // Add your actual filenames
-  { label: "Thread Embroidery", image: "/images/thread.jpg" },
-  { label: "Cut Work", image: "/images/cut.webp" },
-  { label: "Bespoke Tailoring", image: "/images/bespoke.jpg" },
+  { label: "Aari Work", image: "/images/aariwork.jpg", estHours: "EST. HOURS: 120", craftNumber: "" },
+  { label: "Zardosi", image: "/images/zardosi.webp", estHours: "", craftNumber: "CRAFT 01/06" },
+  { label: "Mirror Work", image: "/images/mirror.jpg", estHours: "EST. HOURS: 120", craftNumber: "" },
+  { label: "Thread Embroidery", image: "/images/thread.jpg", estHours: "EST. HOURS: 120", craftNumber: "CRAFT 01/06" },
+  { label: "Cut Work", image: "/images/cut.webp", estHours: "EST. HOURS: 120", craftNumber: "CRAFT 01/06" },
+  { label: "Bespoke Tailoring", image: "/images/bespoke.jpg", estHours: "EST. HOURS: 120", craftNumber: "CRAFT 01/06" },
 ];
 
 export default async function Home() {
@@ -138,8 +138,13 @@ export default async function Home() {
       </section>
 
       {/* Our Craft Section */}
-      <section className="py-24 bg-white border-b border-[#e8e0d5]/40">
+      <section className="py-24 bg-white border-b border-[#e8e0d5]/40 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          {/* Validated Badge */}
+          <div className="absolute top-4 right-4 bg-[#0D0D11]/80 border border-[#c9a465]/30 px-3 py-1 text-[10px] font-mono text-[#c9a465] rounded-sm pointer-events-none">
+            Validated: 60FPS
+          </div>
+
           <div className="text-center max-w-2xl mx-auto space-y-4">
             <h2 className="text-3xl font-light tracking-[0.15em] text-[#1a1a1a] font-cormorant uppercase">
               Our Craft

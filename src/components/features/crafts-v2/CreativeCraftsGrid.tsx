@@ -45,11 +45,17 @@ function CraftCard({ craft }: { craft: CraftItem }) {
   const y = useTransform(rawY, (value) => (prefersReducedMotion ? 0 : value));
 
   return (
-    <Link
-      ref={cardRef}
-      href="/shop"
-      className={`group relative aspect-square w-full flex items-end justify-center pb-8 overflow-hidden border border-[#e8e0d5]/10 bg-[#1a1a1a] ${styles.card}`}
+    <motion.div
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+      whileInView={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
     >
+      <Link
+        ref={cardRef}
+        href="/shop"
+        className={`group relative aspect-square w-full flex items-end justify-center pb-8 overflow-hidden bg-[#1a1a1a] ${styles.card}`}
+      >
       <motion.div
         className={styles.imageWrap}
         style={{
@@ -72,13 +78,35 @@ function CraftCard({ craft }: { craft: CraftItem }) {
         )}
       </motion.div>
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent transition-opacity duration-500 group-hover:from-black/85 pointer-events-none" />
 
-      <div className="text-center z-10 px-4 space-y-2">
-        <span className="block text-lg sm:text-xl lg:text-2xl font-light tracking-wider text-white uppercase">
-          {craft.label}
-        </span>
+      {/* Corner Decorative Dots */}
+      <div className="absolute inset-0 pointer-events-none z-20">
+        <div className="absolute top-0 left-0 w-1.5 h-1.5 bg-[#c9a465] rounded-full" />
+        <div className="absolute top-0 right-0 w-1.5 h-1.5 bg-[#c9a465] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-1.5 h-1.5 bg-[#c9a465] rounded-full" />
+        <div className="absolute bottom-0 right-0 w-1.5 h-1.5 bg-[#c9a465] rounded-full" />
+      </div>
+
+      <div className="relative z-10 flex flex-col h-full justify-between p-4 sm:p-5">
+        {/* Main Typography */}
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center transition-transform duration-500 group-hover:translate-y-[-3px]">
+            <span className="block text-2xl sm:text-3xl lg:text-4xl font-light tracking-[0.08em] text-[#E8D5B5] uppercase font-cormorant leading-tight">
+              {craft.label}
+            </span>
+          </div>
+        </div>
+
+        {/* Bottom Metadata */}
+        {(craft.estHours || craft.craftNumber) && (
+          <div className="flex justify-between items-center text-[10px] font-mono tracking-wider text-[#E8DCC5] uppercase border-t border-[#E8DCC5]/30 pt-2.5">
+            {craft.estHours && <span>{craft.estHours}</span>}
+            {craft.craftNumber && <span>{craft.craftNumber}</span>}
+          </div>
+        )}
       </div>
     </Link>
+    </motion.div>
   );
 }
