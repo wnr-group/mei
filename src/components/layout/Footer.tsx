@@ -69,11 +69,11 @@ export default function Footer({ categories }: { categories: Category[] }) {
             </h4>
             <address className="space-y-2 text-sm text-[#4a4a4a] font-inter leading-relaxed not-italic">
               <p>
-                17 Lourdh Swamy Pillai Street, Ayyappan Nagar,
+                Couture Mei, No. 48, Meyyappa Towers,
                 <br />
-                K.K. Nagar (near Perumal Temple),
+                Sundar Nagar, K K Nagar,
                 <br />
-                Tiruchirappalli, Tamil Nadu 620021
+                Tiruchirappalli, Tamilnadu, 620021.
               </p>
               <p>
                 <a

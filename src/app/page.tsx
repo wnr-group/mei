@@ -16,17 +16,18 @@ import ProductCard from "@/components/shop/ProductCard";
 import Button from "@/components/ui/Button";
 import { getProducts } from "@/lib/services/products";
 import { getCategories } from "@/lib/services/categories";
+import EnhancedCraftsGridContainer from "@/components/features/crafts-v2/EnhancedCraftsGridContainer";
 
 const isSupabaseUrl = (url?: string | null) => {
   return !!url && url.startsWith("https://") && url.includes(".supabase.co/storage/v1/object/public/");
 };
  const crafts = [
-  { label: "Aari Work", image: "/images/aariwork.jpg" },
-  { label: "Zardosi", image: "/images/zardosi.webp" },
-  { label: "Mirror Work", image: "/images/mirror.jpg" }, // Add your actual filenames
-  { label: "Thread Embroidery", image: "/images/thread.jpg" },
-  { label: "Cut Work", image: "/images/cut.webp" },
-  { label: "Bespoke Tailoring", image: "/images/bespoke.jpg" },
+  { label: "Aari Work", image: "/images/aariwork.jpg", estHours: "EST. HOURS: 120", craftNumber: "" },
+  { label: "Zardosi", image: "/images/zardosi.webp", estHours: "", craftNumber: "CRAFT 01/06" },
+  { label: "Mirror Work", image: "/images/mirror.jpg", estHours: "EST. HOURS: 120", craftNumber: "" },
+  { label: "Thread Embroidery", image: "/images/thread.jpg", estHours: "EST. HOURS: 120", craftNumber: "CRAFT 01/06" },
+  { label: "Cut Work", image: "/images/cut.webp", estHours: "EST. HOURS: 120", craftNumber: "CRAFT 01/06" },
+  { label: "Bespoke Tailoring", image: "/images/bespoke.jpg", estHours: "EST. HOURS: 120", craftNumber: "CRAFT 01/06" },
 ];
 
 export default async function Home() {
@@ -137,8 +138,13 @@ export default async function Home() {
       </section>
 
       {/* Our Craft Section */}
-      <section className="py-24 bg-white border-b border-[#e8e0d5]/40">
+      <section className="py-24 bg-white border-b border-[#e8e0d5]/40 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          {/* Validated Badge */}
+          <div className="absolute top-4 right-4 bg-[#0D0D11]/80 border border-[#c9a465]/30 px-3 py-1 text-[10px] font-mono text-[#c9a465] rounded-sm pointer-events-none">
+            Validated: 60FPS
+          </div>
+
           <div className="text-center max-w-2xl mx-auto space-y-4">
             <h2 className="text-3xl font-light tracking-[0.15em] text-[#1a1a1a] font-cormorant uppercase">
               Our Craft
@@ -152,37 +158,7 @@ export default async function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {crafts.map((craft, idx) => (
-              <Link
-                key={idx}
-                href="/shop"
-                className="group relative aspect-square w-full flex items-end justify-center pb-8 overflow-hidden border border-[#e8e0d5]/10 bg-[#1a1a1a]"
-              >
-                {/* 1. The Actual Image Component */}
-                {craft.image && (
-                  <Image
-                    src={craft.image}
-                    alt={craft.label}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                  />
-                )}
-
-                {/* 2. Dark Overlay (Crucial so white text is readable over light images) */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent transition-opacity duration-500 group-hover:opacity-90" />
-
-                {/* 3. Text Label */}
-                <div className="text-center z-10 transition-transform duration-500 group-hover:translate-y-[-4px]">
-                  <span className="text-xs font-bold uppercase tracking-[0.25em] text-white/90 group-hover:text-white transition-colors duration-300">
-                    {craft.label}
-                  </span>
-                  <div className="w-0 h-[1px] bg-white/50 mx-auto mt-2 transition-all duration-500 group-hover:w-full" />
-                </div>
-              </Link>
-            ))}
-          </div>
+          <EnhancedCraftsGridContainer mode="minimal" items={crafts} />
         </div>
       </section>
 
